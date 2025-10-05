@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::body})}">
+<body>
+<section class="center">
+    <div class="panel" style="max-width:460px; text-align:center">
+        <h2 style="margin-top:0">Регистрация успешно отправлена</h2>
+        <p class="hint">Добро пожаловать, <strong th:text="${username}">пользователь</strong>!</p>
+        <div class="row" style="justify-content:center">
+            <a class="btn btn-primary" th:href="@{/login}">Перейти ко входу</a>
+        </div>
+    </div>
+</section>
+</body>
+</html>

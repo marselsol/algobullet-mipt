@@ -1,0 +1,61 @@
+:root{
+  --bg:#0b0f14;
+  --panel:#101826;
+  --muted:#7a8aa0;
+  --text:#e8eef7;
+  --accent:#36d399;
+  --accent-2:#60a5fa;
+  --danger:#ef4444;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:linear-gradient(180deg, #0b0f14 0%, #0c111b 100%);
+  color:var(--text);
+}
+header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 24px; border-bottom:1px solid #141c2b; background:#0b1019cc; backdrop-filter:saturate(120%) blur(4px);
+  position:sticky; top:0; z-index:10;
+}
+.brand{font-weight:800; letter-spacing:1px}
+.brand .bullet{color:var(--accent)}
+nav a{margin-left:12px; text-decoration:none; color:var(--text); opacity:.9}
+nav a:hover{opacity:1}
+.container{max-width:1000px; margin:0 auto; padding:32px 20px}
+.title{font-size:32px; font-weight:800; margin:0 0 12px}
+.subtitle{color:var(--muted); margin-bottom:16px}
+.row{display:flex; gap:14px; flex-wrap:wrap; justify-content:center}
+.row-between{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.btn{
+  padding:10px 16px; border-radius:12px; border:1px solid #1f2937; background:#111827;
+  color:var(--text); text-decoration:none; font-weight:600; cursor:pointer;
+  transition:.2s transform, .2s box-shadow, .2s background;
+}
+.btn:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.btn-primary{background:linear-gradient(180deg, #16a34a, #0ea463); border-color:#115e38}
+.btn-secondary{background:#0f172a; border-color:#334155}
+.panel{background:var(--panel); border:1px solid #1f2937; border-radius:16px; padding:24px; box-shadow: 0 10px 30px rgba(0,0,0,.35)}
+form{display:grid; gap:14px}
+label{font-size:14px; color:#b7c5d4}
+input, select{
+  width:100%; padding:12px 14px; border-radius:12px; border:1px solid #273245;
+  background:#0e1624; color:var(--text); outline:none;
+}
+input:focus, select:focus{border-color:var(--accent-2); box-shadow:0 0 0 3px rgba(96,165,250,.25)}
+.error{color:var(--danger); font-size:12px; margin-top:4px}
+.hint{color:var(--muted); font-size:13px}
+.footer{color:#93a2b7; text-align:center; padding:28px 0; border-top:1px solid #141c2b; opacity:.8}
+.center{display:grid; place-items:center}
+
+/* таблица + сетка + бейджи */
+.table{width:100%; border-collapse:collapse}
+.table th,.table td{padding:10px 12px; border-bottom:1px solid #1f2937; text-align:left; vertical-align:top}
+.badge{padding:2px 8px; border-radius:999px; background:#0f172a; border:1px solid #334155; font-size:12px}
+.grid{display:grid; grid-template-columns: 2fr 1fr; gap:16px}
+.col-8{grid-column:1}
+.col-4{grid-column:2}
+.list{list-style:none; padding:0; margin:0}
+.list li{padding:10px 0; border-bottom:1px solid #1f2937}

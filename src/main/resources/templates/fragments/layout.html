@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} ?: 'ALGO BULLET'">ALGO BULLET</title>
+    <link rel="stylesheet" th:href="@{/styles.css}">
+</head>
+<body>
+<header>
+    <div class="brand">ALGO <span class="bullet">BULLET</span></div>
+    <nav>
+        <a th:href="@{/}">Сигналы</a>
+        <a th:href="@{/profile}">Профиль</a>
+        <a th:href="@{/settings/pump}">Памп-скринер</a>
+        <a th:href="@{/settings/ema}">EMA</a>
+        <a th:href="@{/register}">Регистрация</a>
+        <a th:href="@{/login}">Вход</a>
+    </nav>
+</header>
+
+<main class="container">
+    <div th:insert="${content}"></div>
+</main>
+
+<footer class="footer">© <span th:text="${#dates.format(#dates.createNow(),'yyyy')}"></span> Algo Bullet</footer>
+</body>
+</html>

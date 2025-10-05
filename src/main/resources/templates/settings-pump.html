@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::body})}">
+<body>
+<section class="panel" style="max-width:640px">
+    <h2 style="margin-top:0">Памп-скринер — настройки</h2>
+    <form th:action="@{/settings/pump}" th:object="${pump}" method="post">
+        <label><input type="checkbox" th:field="*{enabled}"> Включен</label>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px">
+            <div>
+                <label>Порог, %</label>
+                <input type="number" step="0.1" min="0.5" th:field="*{minChangePercent}">
+                <div class="hint">Рост за интервал выше порога → сигнал</div>
+            </div>
+            <div>
+                <label>Таймфрейм</label>
+                <select th:field="*{timeframe}">
+                    <option>1m</option><option>3m</option><option>5m</option><option>15m</option><option>1h</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- CSRF -->
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
+
+        <div class="row" style="margin-top:16px; justify-content:flex-start">
+            <button class="btn btn-primary" type="submit">Сохранить</button>
+            <a class="btn btn-secondary" style="margin-left:8px" th:href="@{/dashboard}">В дашборд</a>
+        </div>
+        <div class="hint" th:if="${param.ok}">Сохранено.</div>
+    </form>
+</section>
+</body>
+</html>

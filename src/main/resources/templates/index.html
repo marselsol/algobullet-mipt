@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::body})}">
+<body>
+<section class="hero">
+    <div class="panel center" style="text-align:center; max-width:640px">
+        <h1 class="title">ALGO <span class="bullet" style="color:var(--accent)">BULLET</span></h1>
+        <p class="subtitle">Минималистичная платформа для торговли и аналитики крипты</p>
+        <div class="row">
+            <a class="btn btn-primary" th:href="@{/register}">Регистрация</a>
+            <a class="btn btn-secondary" th:href="@{/login}">Вход</a>
+        </div>
+    </div>
+</section>
+</body>
+</html>

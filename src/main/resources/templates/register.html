@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::body})}">
+<body>
+<section>
+    <div class="panel">
+        <h2 style="margin-top:0">Регистрация</h2>
+        <p class="hint">Создайте аккаунт, чтобы получать сигналы, смотреть аналитику и управлять сделками.</p>
+
+        <form th:action="@{/register}" th:object="${form}" method="post" novalidate>
+            <div>
+                <label>Логин</label>
+                <input th:field="*{username}" type="text" placeholder="Ваш логин">
+                <div class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+            </div>
+
+            <div>
+                <label>Почта</label>
+                <input th:field="*{email}" type="email" placeholder="you@example.com">
+                <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+            </div>
+
+            <div>
+                <label>Пароль</label>
+                <input th:field="*{password}" type="password" placeholder="••••••••">
+                <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            </div>
+
+            <div>
+                <label>Повторите пароль</label>
+                <input th:field="*{confirmPassword}" type="password" placeholder="••••••••">
+                <div class="error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+            </div>
+
+            <div>
+                <label>Телефон</label>
+                <input th:field="*{phone}" type="tel" placeholder="+1 234 567 89">
+                <div class="error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+            </div>
+
+            <!-- CSRF -->
+            <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
+
+            <div class="row" style="justify-content:flex-start; margin-top:6px">
+                <button class="btn btn-primary" type="submit">Зарегистрироваться</button>
+            </div>
+        </form>
+    </div>
+</section>
+</body>
+</html>
