@@ -1,0 +1,5 @@
+spring.application.name=algobullet-mipt
+server.port=
+
+#thymeleaf
+spring.thymeleaf.cache=false
