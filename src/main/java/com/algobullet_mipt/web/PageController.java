@@ -4,44 +4,45 @@ import com.algobullet_mipt.domain.EmaSettings;
 import com.algobullet_mipt.domain.PumpSettings;
 import com.algobullet_mipt.domain.service.SettingsService;
 import com.algobullet_mipt.domain.service.SignalFeedService;
+import com.algobullet_mipt.domain.service.UserAccountService;
+import com.algobullet_mipt.domain.service.UserRegistrationException;
 import com.algobullet_mipt.web.dto.RegistrationForm;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
-
 public class PageController {
 
     private final SettingsService settings;
     private final SignalFeedService feed;
+    private final UserAccountService users;
 
-    public PageController(SettingsService settings, SignalFeedService feed) {
+    public PageController(SettingsService settings, SignalFeedService feed, UserAccountService users) {
         this.settings = settings;
         this.feed = feed;
+        this.users = users;
     }
 
-    /** ЛЕНДИНГ: две кнопки — вход и регистрация */
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("title", "ALGO BULLET");
-        return "index"; // это теперь лендинг, НЕ лента сигналов
+        return "index";
     }
 
-    /** СТРАНИЦА ЛОГИНА (форма) */
     @GetMapping("/login")
     public String login(Model model) {
-        model.addAttribute("title", "Вход — ALGO BULLET");
+        model.addAttribute("title", "Sign in - ALGO BULLET");
         return "login";
     }
 
-    /** СТРАНИЦА РЕГИСТРАЦИИ */
     @GetMapping("/register")
     public String registerForm(Model model) {
-        model.addAttribute("title", "Регистрация — ALGO BULLET");
+        model.addAttribute("title", "Create account - ALGO BULLET");
         model.addAttribute("form", new RegistrationForm());
         return "register";
     }
@@ -50,39 +51,48 @@ public class PageController {
     public String handleRegister(@Valid @ModelAttribute("form") RegistrationForm form,
                                  BindingResult br, Model model) {
         if (br.hasErrors()) {
-            model.addAttribute("title", "Регистрация — ALGO BULLET");
+            model.addAttribute("title", "Create account - ALGO BULLET");
             return "register";
         }
-//        log.info("New user: {}", form);
-        System.out.printf("New user: {}", form);
-        model.addAttribute("title", "Готово — ALGO BULLET");
+        if (!form.getPassword().equals(form.getConfirmPassword())) {
+            br.rejectValue("confirmPassword", "registration.password.mismatch", "Passwords do not match");
+            model.addAttribute("title", "Create account - ALGO BULLET");
+            return "register";
+        }
+
+        try {
+            users.registerUser(form.getUsername(), form.getEmail(), form.getPhone(), form.getPassword());
+        } catch (UserRegistrationException ex) {
+            br.rejectValue(ex.getField(), "registration." + ex.getField(), ex.getMessage());
+            model.addAttribute("title", "Create account - ALGO BULLET");
+            return "register";
+        }
+
+        model.addAttribute("title", "Registration complete");
         model.addAttribute("username", form.getUsername());
         return "success";
     }
 
-    /** РАБОЧАЯ ОБЛАСТЬ (Дашборд) — личная лента сигналов пользователя */
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("title", "Дашборд — ALGO BULLET");
+        model.addAttribute("title", "Dashboard - ALGO BULLET");
         model.addAttribute("pump", settings.pump());
         model.addAttribute("ema", settings.ema());
         model.addAttribute("feed", feed.buildFeed(settings.pump(), settings.ema()));
         return "dashboard";
     }
 
-    /** ПРОФИЛЬ (опционально — инфо о пользователе/кнопки) */
     @GetMapping("/profile")
     public String profile(Model model) {
-        model.addAttribute("title", "Профиль — ALGO BULLET");
+        model.addAttribute("title", "Profile - ALGO BULLET");
         model.addAttribute("pump", settings.pump());
         model.addAttribute("ema", settings.ema());
         return "profile";
     }
 
-    /** Настройки Памп-скринера */
     @GetMapping("/settings/pump")
     public String pump(Model model) {
-        model.addAttribute("title", "Памп-скринер — настройки");
+        model.addAttribute("title", "Pump settings");
         model.addAttribute("pump", settings.pump());
         return "settings-pump";
     }
@@ -96,10 +106,9 @@ public class PageController {
         return "redirect:/settings/pump?ok";
     }
 
-    /** Настройки EMA */
     @GetMapping("/settings/ema")
     public String ema(Model model) {
-        model.addAttribute("title", "EMA-пересечения — настройки");
+        model.addAttribute("title", "EMA settings");
         model.addAttribute("ema", settings.ema());
         return "settings-ema";
     }
