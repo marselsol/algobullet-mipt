@@ -16,9 +16,14 @@
             <a th:href="@{/profile}">Профиль</a>
             <a th:href="@{/settings/pump}">Памп-скринер</a>
             <a th:href="@{/settings/ema}">EMA</a>
+            <form th:action="@{/logout}" method="post" class="logout-form logout-form--nav">
+                <button type="submit">Выход</button>
+            </form>
         </th:block>
-        <a th:href="@{/register}">Регистрация</a>
-        <a th:href="@{/login}">Вход</a>
+        <th:block sec:authorize="isAnonymous()">
+            <a th:href="@{/register}">Регистрация</a>
+            <a th:href="@{/login}">Войти</a>
+        </th:block>
     </nav>
 </header>
 

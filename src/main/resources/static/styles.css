@@ -24,6 +24,10 @@ header{
 .brand .bullet{color:var(--accent)}
 nav a{margin-left:12px; text-decoration:none; color:var(--text); opacity:.9}
 nav a:hover{opacity:1}
+.logout-form{display:inline;margin:0}
+.logout-form--nav{margin-left:12px}
+.logout-form--nav button{background:none;border:none;color:var(--text);font:inherit;cursor:pointer;padding:0;opacity:.9}
+.logout-form--nav button:hover{opacity:1}
 .container{max-width:1000px; margin:0 auto; padding:32px 20px}
 .title{font-size:32px; font-weight:800; margin:0 0 12px}
 .subtitle{color:var(--muted); margin-bottom:16px}

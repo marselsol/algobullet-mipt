@@ -3,7 +3,12 @@
       th:replace="~{fragments/layout :: layout(~{::body})}">
 <body>
 <section class="panel" style="max-width:720px">
-    <h2 style="margin-top:0">Профиль</h2>
+    <div class="row-between" style="margin-bottom:12px">
+        <h2 style="margin:0">Профиль</h2>
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <button type="submit" class="btn btn-secondary">Выход</button>
+        </form>
+    </div>
     <p class="hint">Здесь можно будет редактировать персональные данные, пароль и API-ключи бирж.</p>
 
     <h3>Активные стратегии</h3>
