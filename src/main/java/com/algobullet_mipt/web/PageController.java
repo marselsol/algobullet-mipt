@@ -30,19 +30,19 @@ public class PageController {
 
     @GetMapping("/")
     public String index(Model model) {
-        model.addAttribute("title", "ALGO BULLET");
+        model.addAttribute("title", "ALGOBULLET");
         return "index";
     }
 
     @GetMapping("/login")
     public String login(Model model) {
-        model.addAttribute("title", "Sign in - ALGO BULLET");
+        model.addAttribute("title", "Sign in - ALGOBULLET");
         return "login";
     }
 
     @GetMapping("/register")
     public String registerForm(Model model) {
-        model.addAttribute("title", "Create account - ALGO BULLET");
+        model.addAttribute("title", "Create account - ALGOBULLET");
         model.addAttribute("form", new RegistrationForm());
         return "register";
     }
@@ -51,12 +51,12 @@ public class PageController {
     public String handleRegister(@Valid @ModelAttribute("form") RegistrationForm form,
                                  BindingResult br, Model model) {
         if (br.hasErrors()) {
-            model.addAttribute("title", "Create account - ALGO BULLET");
+            model.addAttribute("title", "Create account - ALGOBULLET");
             return "register";
         }
         if (!form.getPassword().equals(form.getConfirmPassword())) {
             br.rejectValue("confirmPassword", "registration.password.mismatch", "Passwords do not match");
-            model.addAttribute("title", "Create account - ALGO BULLET");
+            model.addAttribute("title", "Create account - ALGOBULLET");
             return "register";
         }
 
@@ -64,7 +64,7 @@ public class PageController {
             users.registerUser(form.getUsername(), form.getEmail(), form.getPhone(), form.getPassword());
         } catch (UserRegistrationException ex) {
             br.rejectValue(ex.getField(), "registration." + ex.getField(), ex.getMessage());
-            model.addAttribute("title", "Create account - ALGO BULLET");
+            model.addAttribute("title", "Create account - ALGOBULLET");
             return "register";
         }
 
@@ -75,7 +75,7 @@ public class PageController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("title", "Dashboard - ALGO BULLET");
+        model.addAttribute("title", "Dashboard - ALGOBULLET");
         model.addAttribute("pump", settings.pump());
         model.addAttribute("ema", settings.ema());
         model.addAttribute("feed", feed.buildFeed(settings.pump(), settings.ema()));
@@ -84,7 +84,7 @@ public class PageController {
 
     @GetMapping("/profile")
     public String profile(Model model) {
-        model.addAttribute("title", "Profile - ALGO BULLET");
+        model.addAttribute("title", "Profile - ALGOBULLET");
         model.addAttribute("pump", settings.pump());
         model.addAttribute("ema", settings.ema());
         return "profile";

@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${title} ?: 'ALGO BULLET'">ALGO BULLET</title>
+    <title th:text="${title} ?: 'ALGOBULLET'">ALGOBULLET</title>
     <link rel="stylesheet" th:href="@{/styles.css}">
 </head>
 <body>
 <header>
-    <div class="brand">ALGO <span class="bullet">BULLET</span></div>
+    <a class="brand" th:href="${#authorization.expression('isAuthenticated()')} ? @{/dashboard} : @{/login}">ALGO<span class="bullet">BULLET</span></a>
     <nav>
         <th:block sec:authorize="isAuthenticated()">
             <a th:href="@{/}">Сигналы</a>
@@ -31,6 +31,6 @@
     <div th:insert="${content}"></div>
 </main>
 
-<footer class="footer">© <span th:text="${#dates.format(#dates.createNow(),'yyyy')}"></span> Algo Bullet</footer>
+<footer class="footer">© <span th:text="${#dates.format(#dates.createNow(),'yyyy')}"></span> ALGOBULLET</footer>
 </body>
 </html>

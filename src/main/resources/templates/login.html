@@ -2,26 +2,26 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::body})}">
 <body>
-<section class="center">
-    <div class="panel" style="max-width:420px">
-        <h2 style="margin-top:0">Вход</h2>
+<section class="center auth">
+    <div class="panel auth-card">
+        <h2>Вход</h2>
+        <p class="hint">Введите логин и пароль, чтобы перейти к дашборду ALGOBULLET.</p>
         <form th:action="@{/login}" method="post">
-            <div>
+            <div class="form-field">
                 <label>Логин</label>
                 <input name="username" type="text" autocomplete="username" required>
             </div>
-            <div>
+            <div class="form-field">
                 <label>Пароль</label>
                 <input name="password" type="password" autocomplete="current-password" required>
             </div>
-            <!-- CSRF (если включён в Security) -->
             <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
-            <div class="row" style="justify-content:flex-start; margin-top:8px">
+            <div class="auth-actions">
                 <button class="btn btn-primary" type="submit">Войти</button>
-                <a class="btn btn-secondary" style="margin-left:8px" th:href="@{/register}">Регистрация</a>
+                <a class="btn btn-secondary" th:href="@{/register}">Регистрация</a>
             </div>
         </form>
-        <p class="hint" style="margin-top:12px">После входа вы попадёте в рабочую область — дашборд сигналов.</p>
+        <p class="hint">После входа вы попадёте в рабочую область — дашборд сигналов.</p>
     </div>
 </section>
 </body>
