@@ -1,4 +1,4 @@
-package com.algobullet_mipt.repository.entity;
+package com.algobullet_mipt.entity;
 
 import org.springframework.security.core.GrantedAuthority;
 

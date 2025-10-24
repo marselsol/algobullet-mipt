@@ -1,21 +1,18 @@
-package com.algobullet_mipt.domain.service;
+package com.algobullet_mipt.service;
 
+import com.algobullet_mipt.entity.UserAccount;
 import com.algobullet_mipt.repository.UserRepository;
-import com.algobullet_mipt.repository.entity.UserAccount;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class UserAccountService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserAccountService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Transactional
     public UserAccount registerUser(String username, String email, String phone, String rawPassword) {

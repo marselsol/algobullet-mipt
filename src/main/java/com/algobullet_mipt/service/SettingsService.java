@@ -1,8 +1,7 @@
-package com.algobullet_mipt.domain.service;
+package com.algobullet_mipt.service;
 
-
-import com.algobullet_mipt.domain.EmaSettings;
-import com.algobullet_mipt.domain.PumpSettings;
+import com.algobullet_mipt.model.EmaSettings;
+import com.algobullet_mipt.model.PumpSettings;
 import org.springframework.stereotype.Service;
 
 @Service

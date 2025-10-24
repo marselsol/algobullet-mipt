@@ -1,4 +1,4 @@
-package com.algobullet_mipt.domain;
+package com.algobullet_mipt.model;
 
 import java.util.ArrayList;
 import java.util.Collections;

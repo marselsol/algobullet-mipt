@@ -1,6 +1,6 @@
 package com.algobullet_mipt.repository;
 
-import com.algobullet_mipt.repository.entity.UserAccount;
+import com.algobullet_mipt.entity.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

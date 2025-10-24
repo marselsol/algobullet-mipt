@@ -1,8 +1,8 @@
-package com.algobullet_mipt.domain.service;
+package com.algobullet_mipt.service;
 
-import com.algobullet_mipt.domain.EmaSettings;
-import com.algobullet_mipt.domain.PumpSettings;
-import com.algobullet_mipt.domain.Signal;
+import com.algobullet_mipt.model.EmaSettings;
+import com.algobullet_mipt.model.PumpSettings;
+import com.algobullet_mipt.model.Signal;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,15 +19,15 @@ public class SignalFeedService {
 
         if (pump.isEnabled()) {
             list.add(new Signal(now.minusSeconds(60), "BTCUSDT", "PUMP",
-                    "Сильный рост +%.1f%% за %s".formatted(pump.getMinChangePercent(), pump.getTimeframe()), 5));
+                    "Резкий рост +%.1f%% за %s".formatted(pump.getMinChangePercent(), pump.getTimeframe()), 5));
             list.add(new Signal(now.minusSeconds(600), "SOLUSDT", "PUMP",
-                    "Импульс +%.1f%% за %s".formatted(pump.getMinChangePercent() * 0.8, pump.getTimeframe()), 3));
+                    "Умеренный рост +%.1f%% за %s".formatted(pump.getMinChangePercent() * 0.8, pump.getTimeframe()), 3));
         }
         if (ema.isEnabled()) {
             list.add(new Signal(now.minusSeconds(180), "ETHUSDT", "EMA",
                     "Пересечение EMA%s/%s на %s".formatted(ema.getFast(), ema.getSlow(), ema.getTimeframe()), 4));
             list.add(new Signal(now.minusSeconds(900), "ARBUSDT", "EMA",
-                    "Пересечение EMA%s/%s на %s (медвежье)".formatted(ema.getFast(), ema.getSlow(), ema.getTimeframe()), 2));
+                    "EMA%s/%s подтверждает тренд на %s".formatted(ema.getFast(), ema.getSlow(), ema.getTimeframe()), 2));
         }
 
         list.sort(Comparator.comparing(Signal::time).reversed());

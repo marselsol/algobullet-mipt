@@ -1,4 +1,4 @@
-package com.algobullet_mipt.domain.service;
+package com.algobullet_mipt.service;
 
 public class UserRegistrationException extends RuntimeException {
 

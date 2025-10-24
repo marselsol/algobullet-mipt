@@ -1,4 +1,4 @@
-package com.algobullet_mipt.domain;
+package com.algobullet_mipt.model;
 
 import java.time.Instant;
 

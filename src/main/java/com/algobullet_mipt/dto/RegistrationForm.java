@@ -1,20 +1,21 @@
-package com.algobullet_mipt.web.dto;
+package com.algobullet_mipt.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class RegistrationForm {
+
     @NotBlank(message = "Укажите логин")
-    @Size(min = 3, max = 32, message = "Логин 3–32 символа")
+    @Size(min = 3, max = 32, message = "Логин должен быть от 3 до 32 символов")
     private String username;
 
-    @NotBlank(message = "Укажите почту")
-    @Email(message = "Некорректная почта")
+    @NotBlank(message = "Укажите e-mail")
+    @Email(message = "Некорректный e-mail")
     private String email;
 
-    @NotBlank(message = "Пароль обязателен")
-    @Size(min = 6, max = 64, message = "Пароль 6–64 символа")
+    @NotBlank(message = "Придумайте пароль")
+    @Size(min = 6, max = 64, message = "Пароль должен быть от 6 до 64 символов")
     private String password;
 
     @NotBlank(message = "Повторите пароль")
@@ -66,9 +67,9 @@ public class RegistrationForm {
     @Override
     public String toString() {
         return "RegistrationForm{" +
-                "username='" + username +
-                ", email='" + email +
-                ", phone='" + phone +
+                "username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
                 '}';
     }
 }
