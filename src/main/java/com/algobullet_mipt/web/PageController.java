@@ -14,6 +14,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class PageController {
@@ -104,6 +106,30 @@ public class PageController {
         s.setMinChangePercent(form.getMinChangePercent());
         s.setTimeframe(form.getTimeframe());
         return "redirect:/settings/pump?ok";
+    }
+
+    @PostMapping("/settings/pump/watchlist/add")
+    public String pumpWatchlistAdd(@RequestParam("symbol") String symbol,
+                                   RedirectAttributes redirectAttributes) {
+        boolean added = settings.pump().addToWatchlist(symbol);
+        if (added) {
+            redirectAttributes.addAttribute("watchlistAdded", "true");
+        } else {
+            redirectAttributes.addAttribute("watchlistError", "true");
+        }
+        return "redirect:/settings/pump";
+    }
+
+    @PostMapping("/settings/pump/watchlist/remove")
+    public String pumpWatchlistRemove(@RequestParam("symbol") String symbol,
+                                      RedirectAttributes redirectAttributes) {
+        boolean removed = settings.pump().removeFromWatchlist(symbol);
+        if (removed) {
+            redirectAttributes.addAttribute("watchlistRemoved", "true");
+        } else {
+            redirectAttributes.addAttribute("watchlistError", "true");
+        }
+        return "redirect:/settings/pump";
     }
 
     @GetMapping("/settings/ema")

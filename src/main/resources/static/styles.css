@@ -332,3 +332,77 @@ input[type="tel"]:focus {
 .btn-primary:hover {
     background-color: #005fcc;
 }
+
+/* Pump screener settings */
+.pump-settings__form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.pump-settings__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+}
+
+.toggle input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.watchlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.watch-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border: 1px solid #dcdfe6;
+    border-radius: 12px;
+    background-color: #fbfcff;
+}
+
+.watch-card__symbol {
+    font-weight: 600;
+    letter-spacing: 0.6px;
+}
+
+.watchlist-add {
+    margin-top: 8px;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.watchlist-add input[type="text"] {
+    flex: 1;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.hint--error {
+    color: #d14343;
+}
+
+.empty-state {
+    padding: 18px;
+    border-radius: 12px;
+    background-color: #f2f4fb;
+    margin: 16px 0;
+    color: #525866;
+}

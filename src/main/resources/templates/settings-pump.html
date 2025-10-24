@@ -2,33 +2,72 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::body})}">
 <body>
-<section class="panel" style="max-width:640px">
-    <h2 style="margin-top:0">Памп-скринер — настройки</h2>
-    <form th:action="@{/settings/pump}" th:object="${pump}" method="post">
-        <label><input type="checkbox" th:field="*{enabled}"> Включен</label>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px">
-            <div>
-                <label>Порог, %</label>
-                <input type="number" step="0.1" min="0.5" th:field="*{minChangePercent}">
-                <div class="hint">Рост за интервал выше порога → сигнал</div>
+<section class="panel pump-settings">
+    <h2>ПАМП-скринер</h2>
+    <p class="hint">Настройте условия срабатывания и список монет, за которыми мы следим.</p>
+
+    <form class="pump-settings__form" th:action="@{/settings/pump}" th:object="${pump}" method="post">
+        <label class="toggle">
+            <input type="checkbox" th:field="*{enabled}">
+            <span>Включить уведомления о пампах</span>
+        </label>
+
+        <div class="pump-settings__grid">
+            <div class="form-field">
+                <label for="minChangePercent">Минимальный рост, %</label>
+                <input id="minChangePercent" type="number" step="0.1" min="0.5" th:field="*{minChangePercent}">
+                <div class="hint">Триггер срабатывает, если цена выросла за выбранный период выше порога.</div>
             </div>
-            <div>
-                <label>Таймфрейм</label>
-                <select th:field="*{timeframe}">
-                    <option>1m</option><option>3m</option><option>5m</option><option>15m</option><option>1h</option>
+            <div class="form-field">
+                <label for="timeframe">Таймфрейм</label>
+                <select id="timeframe" th:field="*{timeframe}">
+                    <option value="1m">1m</option>
+                    <option value="3m">3m</option>
+                    <option value="5m">5m</option>
+                    <option value="15m">15m</option>
+                    <option value="1h">1h</option>
                 </select>
+                <div class="hint">Стандартный интервал анализа для памп-скринера.</div>
             </div>
         </div>
 
-        <!-- CSRF -->
         <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
 
         <div class="row" style="margin-top:16px; justify-content:flex-start">
             <button class="btn btn-primary" type="submit">Сохранить</button>
-            <a class="btn btn-secondary" style="margin-left:8px" th:href="@{/dashboard}">В дашборд</a>
+            <a class="btn btn-secondary" style="margin-left:8px" th:href="@{/dashboard}">Назад в дашборд</a>
         </div>
-        <div class="hint" th:if="${param.ok}">Сохранено.</div>
+        <div class="hint" th:if="${param.ok}">Настройки обновлены.</div>
     </form>
+
+    <hr>
+
+    <h3>Отслеживаемые активы</h3>
+    <p class="hint">Добавьте тикеры (например, BTCUSDT), чтобы получать сигналы именно по ним.</p>
+
+    <div class="watchlist-grid" th:if="${!#lists.isEmpty(pump.watchlist)}">
+        <div class="watch-card" th:each="symbol : ${pump.watchlist}">
+            <div class="watch-card__symbol" th:text="${symbol}">BTCUSDT</div>
+            <form th:action="@{/settings/pump/watchlist/remove}" method="post">
+                <input type="hidden" name="symbol" th:value="${symbol}">
+                <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
+                <button class="btn btn-secondary btn-small" type="submit">Удалить</button>
+            </form>
+        </div>
+    </div>
+    <div class="empty-state" th:if="${#lists.isEmpty(pump.watchlist)}">
+        <p>Тут появятся активы, которые вы добавите для отслеживания.</p>
+    </div>
+
+    <form class="watchlist-add row" th:action="@{/settings/pump/watchlist/add}" method="post">
+        <input type="text" name="symbol" placeholder="Например, DOGEUSDT" autocomplete="off" required pattern="[A-Za-z0-9]{2,20}">
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
+        <button class="btn btn-primary" type="submit">Добавить</button>
+    </form>
+
+    <div class="hint" th:if="${param.watchlistAdded}">Тикер добавлен в мониторинг.</div>
+    <div class="hint" th:if="${param.watchlistRemoved}">Тикер удалён из мониторинга.</div>
+    <div class="hint hint--error" th:if="${param.watchlistError}">Не удалось обновить список. Проверьте формат тикера или наличие дубликата.</div>
 </section>
 </body>
 </html>
