@@ -2,30 +2,89 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::body})}">
 <body>
-<section class="panel" style="max-width:640px">
-    <h2 style="margin-top:0">EMA-пересечения — настройки</h2>
+<section class="panel">
+    <h2 style="margin-top:0">EMA настройки</h2>
+
+    <!-- Глобальное включение и значения по умолчанию -->
     <form th:action="@{/settings/ema}" th:object="${ema}" method="post">
-        <label><input type="checkbox" th:field="*{enabled}"> Включен</label>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px">
-            <div><label>EMA fast</label><input type="number" min="3" max="100" th:field="*{fast}"></div>
-            <div><label>EMA slow</label><input type="number" min="5" max="200" th:field="*{slow}"></div>
-            <div>
-                <label>Таймфрейм</label>
-                <select th:field="*{timeframe}">
-                    <option>5m</option><option>15m</option><option>1h</option><option>4h</option><option>1d</option>
+        <label class="toggle">
+            <input type="checkbox" th:field="*{enabled}">
+            <span>Включить EMA сигналы</span>
+        </label>
+
+        <div class="pump-settings__grid">
+            <div class="form-field">
+                <label for="emaFast">EMA fast (по умолчанию)</label>
+                <input id="emaFast" type="number" min="3" max="100" th:field="*{fast}">
+            </div>
+            <div class="form-field">
+                <label for="emaSlow">EMA slow (по умолчанию)</label>
+                <input id="emaSlow" type="number" min="5" max="200" th:field="*{slow}">
+            </div>
+            <div class="form-field">
+                <label for="emaTf">Таймфрейм (по умолчанию)</label>
+                <select id="emaTf" th:field="*{timeframe}">
+                    <option value="1m">1m</option>
+                    <option value="3m">3m</option>
+                    <option value="5m">5m</option>
+                    <option value="15m">15m</option>
+                    <option value="1h">1h</option>
+                    <option value="4h">4h</option>
+                    <option value="1d">1d</option>
                 </select>
             </div>
         </div>
 
-        <!-- CSRF -->
         <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
 
         <div class="row" style="margin-top:16px; justify-content:flex-start">
             <button class="btn btn-primary" type="submit">Сохранить</button>
-            <a class="btn btn-secondary" style="margin-left:8px" th:href="@{/dashboard}">В дашборд</a>
+            <a class="btn btn-secondary" style="margin-left:8px" th:href="@{/dashboard}">К панели</a>
         </div>
-        <div class="hint" th:if="${param.ok}">Сохранено.</div>
+        <div class="hint" th:if="${param.ok}">Настройки сохранены.</div>
     </form>
+
+    <hr>
+
+    <!-- Список отслеживаемых EMA -->
+    <h3>Отслеживаемые активы (EMA)</h3>
+    <p class="hint">Добавьте тикер (например, BTCUSDT) и параметры EMA для отслеживания.</p>
+
+    <div class="watchlist-grid watchlist-grid--2cols" th:if="${!#lists.isEmpty(ema.watchlist)}">
+        <div class="watch-card" th:each="item : ${ema.watchlist}">
+            <div class="watch-card__symbol" th:text="${item.symbol}">BTCUSDT</div>
+            <div class="hint">EMA <span th:text="${item.fast}">9</span>/<span th:text="${item.slow}">21</span>, TF: <span th:text="${item.timeframe}">15m</span></div>
+            <form th:action="@{/settings/ema/watchlist/remove}" method="post">
+                <input type="hidden" name="symbol" th:value="${item.symbol}">
+                <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
+                <button class="btn btn-secondary btn-small" type="submit">Удалить</button>
+            </form>
+        </div>
+    </div>
+    <div class="empty-state" th:if="${#lists.isEmpty(ema.watchlist)}">
+        <p>Список пуст. Добавьте первый актив ниже.</p>
+    </div>
+
+    <form class="watchlist-add row" th:action="@{/settings/ema/watchlist/add}" method="post">
+        <input type="text" name="symbol" placeholder="Тикер, например DOGEUSDT" autocomplete="off" required pattern="[A-Za-z0-9]{2,20}">
+        <input type="number" name="fast" placeholder="fast" min="3" max="100" th:value="${ema.fast}" required>
+        <input type="number" name="slow" placeholder="slow" min="5" max="200" th:value="${ema.slow}" required>
+        <select name="timeframe" required>
+            <option value="1m">1m</option>
+            <option value="3m">3m</option>
+            <option value="5m">5m</option>
+            <option value="15m" th:selected="${ema.timeframe == '15m'}">15m</option>
+            <option value="1h">1h</option>
+            <option value="4h">4h</option>
+            <option value="1d">1d</option>
+        </select>
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
+        <button class="btn btn-primary" type="submit">Добавить</button>
+    </form>
+
+    <div class="hint" th:if="${param.watchlistAdded}">Актив добавлен в отслеживание.</div>
+    <div class="hint" th:if="${param.watchlistRemoved}">Актив удален из отслеживания.</div>
+    <div class="hint hint--error" th:if="${param.watchlistError}">Ошибка при обработке. Проверьте корректность параметров и отсутствие дублей.</div>
 </section>
 </body>
 </html>

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
@@ -32,5 +34,32 @@ public class EmaSettingsController {
         current.setSlow(form.getSlow());
         current.setTimeframe(form.getTimeframe());
         return "redirect:/settings/ema?ok";
+    }
+
+    @PostMapping("/watchlist/add")
+    public String addSymbol(@RequestParam("symbol") String symbol,
+                            @RequestParam("fast") int fast,
+                            @RequestParam("slow") int slow,
+                            @RequestParam("timeframe") String timeframe,
+                            RedirectAttributes redirectAttributes) {
+        boolean added = settings.ema().addToWatchlist(symbol, fast, slow, timeframe);
+        if (added) {
+            redirectAttributes.addAttribute("watchlistAdded", "true");
+        } else {
+            redirectAttributes.addAttribute("watchlistError", "true");
+        }
+        return "redirect:/settings/ema";
+    }
+
+    @PostMapping("/watchlist/remove")
+    public String removeSymbol(@RequestParam("symbol") String symbol,
+                               RedirectAttributes redirectAttributes) {
+        boolean removed = settings.ema().removeFromWatchlist(symbol);
+        if (removed) {
+            redirectAttributes.addAttribute("watchlistRemoved", "true");
+        } else {
+            redirectAttributes.addAttribute("watchlistError", "true");
+        }
+        return "redirect:/settings/ema";
     }
 }

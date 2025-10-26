@@ -365,6 +365,17 @@ input[type="tel"]:focus {
     margin: 16px 0;
 }
 
+/* Limit to max 2 columns when desired (e.g. EMA page) */
+.watchlist-grid--2cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 700px) {
+    .watchlist-grid--2cols {
+        grid-template-columns: 1fr;
+    }
+}
+
 .watch-card {
     display: flex;
     align-items: center;
