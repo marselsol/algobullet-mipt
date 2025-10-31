@@ -12,7 +12,7 @@
     <a class="brand" th:href="${#authorization.expression('isAuthenticated()')} ? @{/dashboard} : @{/login}">ALGO<span class="bullet">BULLET</span></a>
     <nav>
         <th:block sec:authorize="isAuthenticated()">
-            <a th:href="@{/}">Сигналы</a>
+            <a th:href="@{/portfolio}">Анализ портфеля</a>
             <a th:href="@{/profile}">Профиль</a>
             <a th:href="@{/settings/pump}">Памп-скринер</a>
             <a th:href="@{/settings/ema}">EMA</a>

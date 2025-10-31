@@ -417,3 +417,47 @@ input[type="tel"]:focus {
     margin: 16px 0;
     color: #525866;
 }
+
+/* === Portfolio analysis === */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.metric-card {
+    border: 1px solid #e5e8ee;
+    border-radius: 12px;
+    padding: 16px;
+    background-color: #fbfcff;
+}
+
+.metric-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.metric-card__title {
+    font-weight: 700;
+}
+
+.metric-card__value {
+    font-size: 1.4rem;
+    margin: 8px 0 6px;
+}
+
+.status-ok {
+    background-color: #12b76a;
+}
+
+.status-bad {
+    background-color: #ef4444;
+}
+
+.portfolio-connect__form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
