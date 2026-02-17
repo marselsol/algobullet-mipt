@@ -1,4 +1,4 @@
-package com.algobullet_mipt.infrastructure.mock;
+package com.algobullet_mipt.infrastructure.bybit;
 
 import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -10,24 +10,17 @@ import java.util.List;
 @ConditionalOnProperty(
         prefix = "app.features",
         name = "use-real-market-data",
-        havingValue = "false",
-        matchIfMissing = true
+        havingValue = "true"
 )
-public class MockMarketDataPort implements MarketDataPort {
-
-    private static final List<String> DEFAULT_SYMBOLS = List.of(
-            "BTCUSDT",
-            "ETHUSDT",
-            "SOLUSDT",
-            "XRPUSDT",
-            "ADAUSDT"
-    );
+public class BybitMarketDataPort implements MarketDataPort {
 
     @Override
     public List<String> getTopUsdtSymbols(int limit) {
+        // TODO: replace with Bybit market REST adapter.
+        List<String> fallback = List.of("BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "ADAUSDT");
         if (limit <= 0) {
             return List.of();
         }
-        return DEFAULT_SYMBOLS.stream().limit(limit).toList();
+        return fallback.stream().limit(limit).toList();
     }
 }

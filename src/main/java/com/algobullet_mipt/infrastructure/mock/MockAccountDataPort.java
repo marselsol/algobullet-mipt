@@ -3,12 +3,19 @@ package com.algobullet_mipt.infrastructure.mock;
 import com.algobullet_mipt.domain.portfolio.port.AccountDataPort;
 import com.algobullet_mipt.portfolio.PortfolioAnalysis;
 import com.algobullet_mipt.portfolio.PortfolioMetric;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(
+        prefix = "app.features",
+        name = "use-real-portfolio",
+        havingValue = "false",
+        matchIfMissing = true
+)
 public class MockAccountDataPort implements AccountDataPort {
 
     @Override

@@ -1,4 +1,4 @@
-package com.algobullet_mipt.infrastructure.mock;
+package com.algobullet_mipt.infrastructure.bybit;
 
 import com.algobullet_mipt.domain.market.port.KlineStreamPort;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -8,18 +8,17 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(
         prefix = "app.features",
         name = "use-real-market-data",
-        havingValue = "false",
-        matchIfMissing = true
+        havingValue = "true"
 )
-public class NoopKlineStreamPort implements KlineStreamPort {
+public class BybitKlineStreamPort implements KlineStreamPort {
 
     @Override
     public void subscribe(String symbol, String timeframe) {
-        // No-op mock implementation for MVP scaffold.
+        // TODO: replace with real Bybit websocket subscription.
     }
 
     @Override
     public void unsubscribe(String symbol, String timeframe) {
-        // No-op mock implementation for MVP scaffold.
+        // TODO: replace with real Bybit websocket unsubscription.
     }
 }

@@ -4,6 +4,7 @@ import com.algobullet_mipt.domain.signal.port.SignalPort;
 import com.algobullet_mipt.model.EmaSettings;
 import com.algobullet_mipt.model.PumpSettings;
 import com.algobullet_mipt.model.Signal;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -12,6 +13,12 @@ import java.util.Comparator;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(
+        prefix = "app.features",
+        name = "use-real-market-data",
+        havingValue = "false",
+        matchIfMissing = true
+)
 public class MockSignalPort implements SignalPort {
 
     @Override
