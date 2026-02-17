@@ -11,14 +11,20 @@ import com.bybit.api.client.domain.market.response.kline.MarketKlineResult;
 import com.bybit.api.client.domain.market.response.tickers.TickerEntry;
 import com.bybit.api.client.domain.market.response.tickers.TickersResult;
 import com.bybit.api.client.restApi.BybitApiMarketRestClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 @ConditionalOnProperty(
@@ -26,6 +32,7 @@ import java.util.Set;
         name = "use-real-market-data",
         havingValue = "true"
 )
+@Slf4j
 public class BybitMarketDataPort implements MarketDataPort {
 
     private static final Set<String> STABLE_COINS = Set.of(
@@ -34,9 +41,27 @@ public class BybitMarketDataPort implements MarketDataPort {
     );
 
     private final BybitApiMarketRestClient marketRestClient;
+    private final Clock clock;
+    private final Duration topSymbolsTtl;
+    private final Duration klinesTtl;
+    private final ConcurrentMap<Integer, CacheEntry<List<String>>> topSymbolsCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, CacheEntry<List<KlineCandle>>> klinesCache = new ConcurrentHashMap<>();
 
+    @Autowired
     public BybitMarketDataPort(BybitApiMarketRestClient marketRestClient) {
+        this(marketRestClient, Clock.systemUTC(), Duration.ofSeconds(30), Duration.ofSeconds(15));
+    }
+
+    BybitMarketDataPort(
+            BybitApiMarketRestClient marketRestClient,
+            Clock clock,
+            Duration topSymbolsTtl,
+            Duration klinesTtl
+    ) {
         this.marketRestClient = marketRestClient;
+        this.clock = clock;
+        this.topSymbolsTtl = topSymbolsTtl;
+        this.klinesTtl = klinesTtl;
     }
 
     @Override
@@ -44,6 +69,12 @@ public class BybitMarketDataPort implements MarketDataPort {
         if (limit <= 0) {
             return List.of();
         }
+        CacheEntry<List<String>> cached = topSymbolsCache.get(limit);
+        if (isFresh(cached)) {
+            log.debug("Top symbols cache hit: limit={}", limit);
+            return cached.value();
+        }
+        log.debug("Top symbols cache miss: limit={}", limit);
 
         MarketDataRequest request = MarketDataRequest.builder()
                 .category(CategoryType.LINEAR)
@@ -59,12 +90,14 @@ public class BybitMarketDataPort implements MarketDataPort {
                 ? response.getResult().getTickerEntries()
                 : List.of();
 
-        return tickers.stream()
+        List<String> symbols = tickers.stream()
                 .filter(this::isValidUsdtTicker)
                 .sorted(this::compareByTurnoverDesc)
                 .limit(limit)
                 .map(TickerEntry::getSymbol)
                 .toList();
+        topSymbolsCache.put(limit, new CacheEntry<>(symbols, clock.instant().plus(topSymbolsTtl)));
+        return symbols;
     }
 
     @Override
@@ -72,10 +105,18 @@ public class BybitMarketDataPort implements MarketDataPort {
         if (symbol == null || symbol.isBlank() || limit <= 0) {
             return List.of();
         }
+        String normalizedSymbol = symbol.trim().toUpperCase();
+        String cacheKey = normalizedSymbol + "|" + timeframe + "|" + limit;
+        CacheEntry<List<KlineCandle>> cached = klinesCache.get(cacheKey);
+        if (isFresh(cached)) {
+            log.debug("Klines cache hit: key={}", cacheKey);
+            return cached.value();
+        }
+        log.debug("Klines cache miss: key={}", cacheKey);
 
         MarketDataRequest request = MarketDataRequest.builder()
                 .category(CategoryType.LINEAR)
-                .symbol(symbol.trim().toUpperCase())
+                .symbol(normalizedSymbol)
                 .marketInterval(mapInterval(timeframe))
                 .limit(limit)
                 .build();
@@ -90,10 +131,12 @@ public class BybitMarketDataPort implements MarketDataPort {
                 ? response.getResult().getMarketKlineEntries()
                 : List.of();
 
-        return entries.stream()
+        List<KlineCandle> candles = entries.stream()
                 .sorted(Comparator.comparingLong(MarketKlineEntry::getStartTime))
                 .map(this::toKlineCandle)
                 .toList();
+        klinesCache.put(cacheKey, new CacheEntry<>(candles, clock.instant().plus(klinesTtl)));
+        return candles;
     }
 
     private boolean isValidUsdtTicker(TickerEntry ticker) {
@@ -164,5 +207,12 @@ public class BybitMarketDataPort implements MarketDataPort {
         if (response.getRetCode() != 0) {
             throw new IllegalStateException("Bybit API error: " + response.getRetCode() + " " + response.getRetMsg());
         }
+    }
+
+    private boolean isFresh(CacheEntry<?> entry) {
+        return entry != null && clock.instant().isBefore(entry.expiresAt());
+    }
+
+    private record CacheEntry<T>(T value, Instant expiresAt) {
     }
 }
