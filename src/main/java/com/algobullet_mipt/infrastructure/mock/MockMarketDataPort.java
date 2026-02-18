@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @ConditionalOnProperty(
@@ -19,13 +21,28 @@ import java.util.List;
 )
 public class MockMarketDataPort implements MarketDataPort {
 
+    private static final Set<String> DEFAULT_SYMBOL_SET;
     private static final List<String> DEFAULT_SYMBOLS = List.of(
             "BTCUSDT",
             "ETHUSDT",
             "SOLUSDT",
             "XRPUSDT",
-            "ADAUSDT"
+            "ADAUSDT",
+            "DOGEUSDT",
+            "BNBUSDT",
+            "LTCUSDT",
+            "LINKUSDT",
+            "AVAXUSDT",
+            "DOTUSDT",
+            "TRXUSDT",
+            "MATICUSDT",
+            "ATOMUSDT",
+            "NEARUSDT"
     );
+
+    static {
+        DEFAULT_SYMBOL_SET = Set.copyOf(DEFAULT_SYMBOLS);
+    }
 
     @Override
     public List<String> getTopUsdtSymbols(int limit) {
@@ -58,5 +75,21 @@ public class MockMarketDataPort implements MarketDataPort {
             ));
         }
         return candles;
+    }
+
+    @Override
+    public Optional<String> normalizeLinearSymbol(String symbol) {
+        Optional<String> normalized = MarketDataPort.super.normalizeLinearSymbol(symbol);
+        if (normalized.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String candidate = normalized.get();
+        if (DEFAULT_SYMBOL_SET.contains(candidate)) {
+            return Optional.of(candidate);
+        }
+
+        String withUsdt = candidate.endsWith("USDT") ? candidate : candidate + "USDT";
+        return DEFAULT_SYMBOL_SET.contains(withUsdt) ? Optional.of(withUsdt) : Optional.empty();
     }
 }

@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @ConditionalOnProperty(
@@ -52,13 +53,19 @@ public class BybitSignalPort implements SignalPort {
         if (ema.isEnabled()) {
             for (EmaSettings.EmaWatch watch : ema.getWatchlist()) {
                 try {
+                    Optional<String> normalizedSymbol = marketDataPort.normalizeLinearSymbol(watch.getSymbol());
+                    if (normalizedSymbol.isEmpty()) {
+                        log.info("Skipping EMA watch with invalid LINEAR symbol: {}", watch.getSymbol());
+                        continue;
+                    }
+
                     int barsToLoad = Math.max(watch.getSlow() + 5, 60);
                     List<KlineCandle> candles = marketDataPort.getRecentKlines(
-                            watch.getSymbol(),
+                            normalizedSymbol.get(),
                             watch.getTimeframe(),
                             barsToLoad
                     );
-                    Signal emaSignal = buildEmaSignal(watch, candles);
+                    Signal emaSignal = buildEmaSignal(normalizedSymbol.get(), watch, candles);
                     if (emaSignal != null) {
                         signals.add(emaSignal);
                     }
@@ -72,12 +79,12 @@ public class BybitSignalPort implements SignalPort {
         return signals;
     }
 
-    private Signal buildEmaSignal(EmaSettings.EmaWatch watch, List<KlineCandle> candles) {
+    private Signal buildEmaSignal(String symbol, EmaSettings.EmaWatch watch, List<KlineCandle> candles) {
         if (candles == null || candles.size() < watch.getSlow() + 2) {
             return null;
         }
 
-        BarSeries series = new BaseBarSeriesBuilder().withName(watch.getSymbol()).build();
+        BarSeries series = new BaseBarSeriesBuilder().withName(symbol).build();
         Duration barDuration = toBarDuration(watch.getTimeframe());
 
         for (KlineCandle candle : candles) {
@@ -110,30 +117,30 @@ public class BybitSignalPort implements SignalPort {
 
         boolean crossedUp = fastPrev.isLessThanOrEqual(slowPrev) && fastNow.isGreaterThan(slowNow);
         boolean crossedDown = fastPrev.isGreaterThanOrEqual(slowPrev) && fastNow.isLessThan(slowNow);
-        boolean bullish = fastNow.isGreaterThan(slowNow);
-
-        String type;
-        String text;
-        int strength;
 
         if (crossedUp) {
-            type = "EMA_BUY";
-            text = "EMA%s/%s bullish crossover on %s".formatted(watch.getFast(), watch.getSlow(), watch.getTimeframe());
-            strength = 5;
-        } else if (crossedDown) {
-            type = "EMA_SELL";
-            text = "EMA%s/%s bearish crossover on %s".formatted(watch.getFast(), watch.getSlow(), watch.getTimeframe());
-            strength = 5;
-        } else {
-            type = "EMA";
-            text = bullish
-                    ? "EMA%s/%s bullish trend on %s".formatted(watch.getFast(), watch.getSlow(), watch.getTimeframe())
-                    : "EMA%s/%s bearish trend on %s".formatted(watch.getFast(), watch.getSlow(), watch.getTimeframe());
-            strength = 2;
+            Instant signalTime = candles.get(candles.size() - 1).openTime();
+            return new Signal(
+                    signalTime,
+                    symbol,
+                    "EMA_BUY",
+                    "EMA%s/%s bullish crossover on %s".formatted(watch.getFast(), watch.getSlow(), watch.getTimeframe()),
+                    5
+            );
         }
 
-        Instant signalTime = candles.get(candles.size() - 1).openTime();
-        return new Signal(signalTime, watch.getSymbol(), type, text, strength);
+        if (crossedDown) {
+            Instant signalTime = candles.get(candles.size() - 1).openTime();
+            return new Signal(
+                    signalTime,
+                    symbol,
+                    "EMA_SELL",
+                    "EMA%s/%s bearish crossover on %s".formatted(watch.getFast(), watch.getSlow(), watch.getTimeframe()),
+                    5
+            );
+        }
+
+        return null;
     }
 
     private Duration toBarDuration(String timeframe) {

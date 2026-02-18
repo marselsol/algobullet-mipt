@@ -5,7 +5,10 @@ import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import com.bybit.api.client.domain.CategoryType;
 import com.bybit.api.client.domain.GenericResponse;
 import com.bybit.api.client.domain.market.MarketInterval;
+import com.bybit.api.client.domain.market.InstrumentStatus;
 import com.bybit.api.client.domain.market.request.MarketDataRequest;
+import com.bybit.api.client.domain.market.response.instrumentInfo.InstrumentEntry;
+import com.bybit.api.client.domain.market.response.instrumentInfo.InstrumentInfoResult;
 import com.bybit.api.client.domain.market.response.kline.MarketKlineEntry;
 import com.bybit.api.client.domain.market.response.kline.MarketKlineResult;
 import com.bybit.api.client.domain.market.response.tickers.TickerEntry;
@@ -22,6 +25,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -44,12 +49,14 @@ public class BybitMarketDataPort implements MarketDataPort {
     private final Clock clock;
     private final Duration topSymbolsTtl;
     private final Duration klinesTtl;
+    private final Duration instrumentsTtl;
     private final ConcurrentMap<Integer, CacheEntry<List<String>>> topSymbolsCache = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, CacheEntry<List<KlineCandle>>> klinesCache = new ConcurrentHashMap<>();
+    private volatile CacheEntry<Set<String>> tradingLinearSymbolsCache;
 
     @Autowired
     public BybitMarketDataPort(BybitApiMarketRestClient marketRestClient) {
-        this(marketRestClient, Clock.systemUTC(), Duration.ofSeconds(30), Duration.ofSeconds(15));
+        this(marketRestClient, Clock.systemUTC(), Duration.ofSeconds(30), Duration.ofSeconds(15), Duration.ofMinutes(10));
     }
 
     BybitMarketDataPort(
@@ -58,10 +65,21 @@ public class BybitMarketDataPort implements MarketDataPort {
             Duration topSymbolsTtl,
             Duration klinesTtl
     ) {
+        this(marketRestClient, clock, topSymbolsTtl, klinesTtl, Duration.ofMinutes(10));
+    }
+
+    BybitMarketDataPort(
+            BybitApiMarketRestClient marketRestClient,
+            Clock clock,
+            Duration topSymbolsTtl,
+            Duration klinesTtl,
+            Duration instrumentsTtl
+    ) {
         this.marketRestClient = marketRestClient;
         this.clock = clock;
         this.topSymbolsTtl = topSymbolsTtl;
         this.klinesTtl = klinesTtl;
+        this.instrumentsTtl = instrumentsTtl;
     }
 
     @Override
@@ -139,6 +157,32 @@ public class BybitMarketDataPort implements MarketDataPort {
         return candles;
     }
 
+    @Override
+    public Optional<String> normalizeLinearSymbol(String symbol) {
+        if (symbol == null) {
+            return Optional.empty();
+        }
+
+        String candidate = symbol
+                .trim()
+                .toUpperCase(Locale.ROOT)
+                .replace("/", "")
+                .replace("-", "")
+                .replace("_", "");
+
+        if (candidate.isBlank() || !candidate.matches("[A-Z0-9]{2,20}")) {
+            return Optional.empty();
+        }
+
+        Set<String> tradingSymbols = getTradingLinearSymbols();
+        if (tradingSymbols.contains(candidate)) {
+            return Optional.of(candidate);
+        }
+
+        String withUsdt = candidate.endsWith("USDT") ? candidate : candidate + "USDT";
+        return tradingSymbols.contains(withUsdt) ? Optional.of(withUsdt) : Optional.empty();
+    }
+
     private boolean isValidUsdtTicker(TickerEntry ticker) {
         if (ticker == null || ticker.getSymbol() == null) {
             return false;
@@ -153,6 +197,38 @@ public class BybitMarketDataPort implements MarketDataPort {
 
     private int compareByTurnoverDesc(TickerEntry left, TickerEntry right) {
         return parseDecimal(right.getTurnover24h()).compareTo(parseDecimal(left.getTurnover24h()));
+    }
+
+    private Set<String> getTradingLinearSymbols() {
+        CacheEntry<Set<String>> cached = tradingLinearSymbolsCache;
+        if (isFresh(cached)) {
+            return cached.value();
+        }
+
+        MarketDataRequest request = MarketDataRequest.builder()
+                .category(CategoryType.LINEAR)
+                .instrumentStatus(InstrumentStatus.TRADING)
+                .limit(1000)
+                .build();
+
+        GenericResponse<InstrumentInfoResult> response = BybitResponseMapper.parse(
+                marketRestClient.getInstrumentsInfo(request),
+                InstrumentInfoResult.class
+        );
+        assertSuccess(response);
+
+        List<InstrumentEntry> entries = response.getResult() != null && response.getResult().getInstrumentEntries() != null
+                ? response.getResult().getInstrumentEntries()
+                : List.of();
+
+        Set<String> symbols = entries.stream()
+                .map(InstrumentEntry::getSymbol)
+                .filter(s -> s != null && !s.isBlank())
+                .map(s -> s.trim().toUpperCase(Locale.ROOT))
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+
+        tradingLinearSymbolsCache = new CacheEntry<>(symbols, clock.instant().plus(instrumentsTtl));
+        return symbols;
     }
 
     private KlineCandle toKlineCandle(MarketKlineEntry entry) {

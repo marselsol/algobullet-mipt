@@ -2,6 +2,8 @@ package com.algobullet_mipt.infrastructure.bybit;
 
 import com.algobullet_mipt.domain.market.model.KlineCandle;
 import com.bybit.api.client.domain.GenericResponse;
+import com.bybit.api.client.domain.market.response.instrumentInfo.InstrumentEntry;
+import com.bybit.api.client.domain.market.response.instrumentInfo.InstrumentInfoResult;
 import com.bybit.api.client.domain.market.response.kline.MarketKlineEntry;
 import com.bybit.api.client.domain.market.response.kline.MarketKlineResult;
 import com.bybit.api.client.domain.market.response.tickers.TickerEntry;
@@ -14,6 +16,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -157,6 +160,49 @@ class BybitMarketDataPortTest {
         assertThat(first).containsExactly("BTCUSDT");
         assertThat(second).containsExactly("ETHUSDT");
         verify(client, times(2)).getMarketTickers(any());
+    }
+
+    @Test
+    void normalizesAndValidatesLinearSymbolByInstrumentsInfo() {
+        BybitApiMarketRestClient client = mock(BybitApiMarketRestClient.class);
+        BybitMarketDataPort port = new BybitMarketDataPort(client);
+
+        InstrumentEntry btc = mock(InstrumentEntry.class);
+        when(btc.getSymbol()).thenReturn("BTCUSDT");
+
+        InstrumentInfoResult result = mock(InstrumentInfoResult.class);
+        when(result.getInstrumentEntries()).thenReturn(List.of(btc));
+
+        GenericResponse<InstrumentInfoResult> response = new GenericResponse<>();
+        response.setRetCode(0);
+        response.setResult(result);
+
+        when(client.getInstrumentsInfo(any())).thenReturn(response);
+
+        Optional<String> normalized = port.normalizeLinearSymbol(" btc/usdt ");
+
+        assertThat(normalized).contains("BTCUSDT");
+        verify(client, times(1)).getInstrumentsInfo(any());
+    }
+
+    @Test
+    void returnsEmptyForUnknownLinearSymbol() {
+        BybitApiMarketRestClient client = mock(BybitApiMarketRestClient.class);
+        BybitMarketDataPort port = new BybitMarketDataPort(client);
+
+        InstrumentInfoResult result = mock(InstrumentInfoResult.class);
+        when(result.getInstrumentEntries()).thenReturn(List.of());
+
+        GenericResponse<InstrumentInfoResult> response = new GenericResponse<>();
+        response.setRetCode(0);
+        response.setResult(result);
+
+        when(client.getInstrumentsInfo(any())).thenReturn(response);
+
+        Optional<String> normalized = port.normalizeLinearSymbol("UNKNOWNUSDT");
+
+        assertThat(normalized).isEmpty();
+        verify(client, times(1)).getInstrumentsInfo(any());
     }
 
     private static final class MutableClock extends Clock {

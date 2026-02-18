@@ -7,16 +7,12 @@ public class EmaSettings {
     private boolean enabled = true;
     private int fast = 9;
     private int slow = 21;
-    private String timeframe = "15m";
+    private String timeframe = "1m";
 
     // Per-symbol configurations, preserve insertion order
     private final Map<String, EmaWatch> watchlist = new LinkedHashMap<>();
 
     public EmaSettings() {
-        // Seed with a few popular symbols using defaults
-        addToWatchlist("BTCUSDT", fast, slow, timeframe);
-        addToWatchlist("ETHUSDT", fast, slow, timeframe);
-        addToWatchlist("SOLUSDT", fast, slow, timeframe);
     }
 
     public boolean isEnabled() {
@@ -70,6 +66,10 @@ public class EmaSettings {
         String normalized = normalizeSymbol(symbol);
         if (normalized == null) return false;
         return watchlist.remove(normalized) != null;
+    }
+
+    public void clearWatchlist() {
+        watchlist.clear();
     }
 
     private boolean isValidParams(int fast, int slow, String timeframe) {

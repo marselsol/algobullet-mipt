@@ -11,11 +11,14 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class BybitSignalPortTest {
@@ -25,17 +28,23 @@ class BybitSignalPortTest {
         MarketDataPort marketDataPort = mock(MarketDataPort.class);
         BybitSignalPort signalPort = new BybitSignalPort(marketDataPort);
 
-        List<KlineCandle> candles = risingCandles(80, Instant.parse("2026-02-17T12:00:00Z"), BigDecimal.valueOf(100));
+        List<KlineCandle> candles = crossoverCandles(Instant.parse("2026-02-17T12:00:00Z"));
+        when(marketDataPort.normalizeLinearSymbol(anyString())).thenReturn(Optional.of("BTCUSDT"));
         when(marketDataPort.getRecentKlines(anyString(), anyString(), anyInt())).thenReturn(candles);
 
         EmaSettings ema = new EmaSettings();
+        ema.removeFromWatchlist("BTCUSDT");
+        ema.removeFromWatchlist("ETHUSDT");
+        ema.removeFromWatchlist("SOLUSDT");
+        ema.addToWatchlist("BTCUSDT", 3, 5, "1m");
+
         PumpSettings pump = new PumpSettings();
         pump.setEnabled(false);
 
         List<Signal> signals = signalPort.buildFeed(pump, ema);
 
-        assertThat(signals).isNotEmpty();
-        assertThat(signals.stream().allMatch(s -> s.type().startsWith("EMA"))).isTrue();
+        assertThat(signals).hasSize(1);
+        assertThat(signals.get(0).type()).isEqualTo("EMA_BUY");
     }
 
     @Test
@@ -54,12 +63,46 @@ class BybitSignalPortTest {
         assertThat(signals.get(0).type()).isEqualTo("PUMP");
     }
 
-    private List<KlineCandle> risingCandles(int count, Instant start, BigDecimal initial) {
+    @Test
+    void skipsInvalidWatchSymbolsBeforeLoadingKlines() {
+        MarketDataPort marketDataPort = mock(MarketDataPort.class);
+        BybitSignalPort signalPort = new BybitSignalPort(marketDataPort);
+
+        EmaSettings ema = new EmaSettings();
+        ema.removeFromWatchlist("BTCUSDT");
+        ema.removeFromWatchlist("ETHUSDT");
+        ema.removeFromWatchlist("SOLUSDT");
+        ema.addToWatchlist("FAKEUSDT", 9, 21, "15m");
+
+        PumpSettings pump = new PumpSettings();
+        pump.setEnabled(false);
+
+        when(marketDataPort.normalizeLinearSymbol(anyString())).thenReturn(Optional.empty());
+
+        List<Signal> signals = signalPort.buildFeed(pump, ema);
+
+        assertThat(signals).isEmpty();
+        verify(marketDataPort, never()).getRecentKlines(anyString(), anyString(), anyInt());
+    }
+
+    private List<KlineCandle> crossoverCandles(Instant start) {
         List<KlineCandle> candles = new ArrayList<>();
-        BigDecimal current = initial;
-        for (int i = 0; i < count; i++) {
-            BigDecimal open = current;
-            BigDecimal close = current.add(BigDecimal.valueOf(0.5));
+        List<BigDecimal> closes = List.of(
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(10),
+                BigDecimal.valueOf(20)
+        );
+
+        for (int i = 0; i < closes.size(); i++) {
+            BigDecimal close = closes.get(i);
+            BigDecimal open = i == 0 ? close : closes.get(i - 1);
             candles.add(new KlineCandle(
                     start.plusSeconds(60L * i),
                     open,
@@ -69,7 +112,6 @@ class BybitSignalPortTest {
                     BigDecimal.valueOf(1000 + i),
                     BigDecimal.valueOf(50000 + i * 100L)
             ));
-            current = close;
         }
         return candles;
     }

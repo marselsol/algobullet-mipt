@@ -1,5 +1,6 @@
 package com.algobullet_mipt.controller;
 
+import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import com.algobullet_mipt.model.EmaSettings;
 import com.algobullet_mipt.service.SettingsService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class EmaSettingsController {
 
     private final SettingsService settings;
+    private final MarketDataPort marketDataPort;
 
     @GetMapping
     public String view(Model model) {
@@ -42,7 +44,13 @@ public class EmaSettingsController {
                             @RequestParam("slow") int slow,
                             @RequestParam("timeframe") String timeframe,
                             RedirectAttributes redirectAttributes) {
-        boolean added = settings.ema().addToWatchlist(symbol, fast, slow, timeframe);
+        var normalized = marketDataPort.normalizeLinearSymbol(symbol);
+        if (normalized.isEmpty()) {
+            redirectAttributes.addAttribute("watchlistInvalidSymbol", "true");
+            return "redirect:/settings/ema";
+        }
+
+        boolean added = settings.ema().addToWatchlist(normalized.get(), fast, slow, timeframe);
         if (added) {
             redirectAttributes.addAttribute("watchlistAdded", "true");
         } else {

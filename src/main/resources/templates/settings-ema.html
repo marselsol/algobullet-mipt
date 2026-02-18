@@ -84,6 +84,7 @@
 
     <div class="hint" th:if="${param.watchlistAdded}">Актив добавлен в отслеживание.</div>
     <div class="hint" th:if="${param.watchlistRemoved}">Актив удален из отслеживания.</div>
+    <div class="hint hint--error" th:if="${param.watchlistInvalidSymbol}">Ticker is not available in Bybit LINEAR (TRADING).</div>
     <div class="hint hint--error" th:if="${param.watchlistError}">Ошибка при обработке. Проверьте корректность параметров и отсутствие дублей.</div>
 </section>
 </body>
