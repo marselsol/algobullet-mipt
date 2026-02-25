@@ -2,39 +2,23 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::body})}">
 <body>
-
 <section class="grid">
-    <!-- Левая колонка: Подключение и метрики -->
     <div class="col-8">
         <div class="panel">
             <h2>Подключение Bybit</h2>
-            <p class="hint" th:if="${bybitConnected}">Статус: <span class="badge status-ok">Подключено (заглушка)</span></p>
+            <p class="hint" th:if="${bybitConnected}">Статус: <span class="badge status-ok">Подключено</span></p>
             <p class="hint" th:if="${!bybitConnected}">Статус: <span class="badge status-bad">Не подключено</span></p>
-
-            <form th:action="@{/portfolio/connect}" method="post" class="portfolio-connect__form">
-                <div class="form-field">
-                    <label for="apiKey">API Key</label>
-                    <input id="apiKey" name="apiKey" type="text" placeholder="Введите API Key" required>
-                </div>
-                <div class="form-field">
-                    <label for="apiSecret">API Secret</label>
-                    <input id="apiSecret" name="apiSecret" type="password" placeholder="Введите API Secret" required>
-                </div>
-                <div class="row" style="gap:12px; margin-top:8px">
-                    <button class="btn btn-primary" type="submit">Сохранить (заглушка)</button>
-                    <span class="hint">Ключи никуда не отправляются — только демо.</span>
-                </div>
-            </form>
+            <p class="hint">API-ключи настраиваются в <a th:href="@{/profile}">профиле</a> пользователя.</p>
         </div>
 
         <div class="panel">
             <h2>Анализ портфеля</h2>
-            <p class="hint">Комплексный анализ портфеля исходя из списка активов на бирже.</p>
+            <p class="hint">Метрики рассчитываются по данным Bybit (кошелек и открытые позиции).</p>
 
             <div class="metric-grid">
                 <div class="metric-card" th:each="m : ${analysis.metrics}">
                     <div class="metric-card__head">
-                        <div class="metric-card__title" th:text="${m.name}">Sharpe Ratio</div>
+                        <div class="metric-card__title" th:text="${m.name}">Metric</div>
                         <span class="badge" th:classappend="${m.passed} ? ' status-ok' : ' status-bad'"
                               th:text="${m.passed} ? 'OK' : 'Провал'">OK</span>
                     </div>
@@ -45,58 +29,19 @@
         </div>
     </div>
 
-    <!-- Правая колонка: Пояснения/легенда -->
     <aside class="col-4">
         <div class="panel">
             <h3>Что показываем</h3>
             <ul class="list">
-                <li class="row-between">
-                    <div>
-                        <div><strong>Sharpe Ratio</strong></div>
-                        <div class="hint">Доходность на единицу полной волатильности</div>
-                    </div>
-                </li>
-                <li class="row-between">
-                    <div>
-                        <div><strong>Максимальная просадка</strong></div>
-                        <div class="hint">Худшее падение от пика к минимуму</div>
-                    </div>
-                </li>
-                <li class="row-between">
-                    <div>
-                        <div><strong>Корреляция активов</strong></div>
-                        <div class="hint">Диверсификация и зависимость доходностей</div>
-                    </div>
-                </li>
-                <li class="row-between">
-                    <div>
-                        <div><strong>Модель Марковица (MPT)</strong></div>
-                        <div class="hint">Рекомендации по соотношению риска</div>
-                    </div>
-                </li>
-                <li class="row-between">
-                    <div>
-                        <div><strong>Value at Risk</strong></div>
-                        <div class="hint">Потенциальный убыток при доверии 95%</div>
-                    </div>
-                </li>
-                <li class="row-between">
-                    <div>
-                        <div><strong>Доля стейблкоинов</strong></div>
-                        <div class="hint">Подушка ликвидности и риск-экспозиция</div>
-                    </div>
-                </li>
-                <li class="row-between">
-                    <div>
-                        <div><strong>Доходность на рыночный риск</strong></div>
-                        <div class="hint">Аналог Treynor: доходность/бета</div>
-                    </div>
-                </li>
+                <li class="row-between"><div><strong>Total Equity</strong><div class="hint">Общая стоимость аккаунта</div></div></li>
+                <li class="row-between"><div><strong>Available Balance</strong><div class="hint">Свободная маржа для новых сделок</div></div></li>
+                <li class="row-between"><div><strong>Unrealized PnL</strong><div class="hint">Нереализованный результат по открытым позициям</div></div></li>
+                <li class="row-between"><div><strong>Open Positions</strong><div class="hint">Количество открытых позиций</div></div></li>
+                <li class="row-between"><div><strong>Exposure / Equity</strong><div class="hint">Оценка нагрузки позиции на капитал</div></div></li>
+                <li class="row-between"><div><strong>Largest Position</strong><div class="hint">Контроль концентрации риска</div></div></li>
             </ul>
         </div>
     </aside>
 </section>
-
 </body>
 </html>
-

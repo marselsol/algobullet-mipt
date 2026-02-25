@@ -9,7 +9,33 @@
             <button type="submit" class="btn btn-secondary">Выход</button>
         </form>
     </div>
-    <p class="hint">Здесь можно будет редактировать персональные данные, пароль и API-ключи бирж.</p>
+    <p class="hint">Здесь можно редактировать настройки, а также сохранить API-ключи Bybit для использования в портфеле и других разделах.</p>
+
+    <h3>Bybit API</h3>
+    <p class="hint">Ключи сохраняются за текущим пользователем в базе данных. Секрет можно оставить пустым, чтобы не менять.</p>
+
+    <form th:action="@{/profile/bybit}" method="post" class="portfolio-connect__form">
+        <div class="form-field">
+            <label for="profileApiKey">API Key</label>
+            <input id="profileApiKey" name="apiKey" type="text" th:value="${bybitApiKey}" placeholder="Введите API Key">
+        </div>
+        <div class="form-field">
+            <label for="profileApiSecret">API Secret</label>
+            <input id="profileApiSecret" name="apiSecret" type="password" placeholder="Оставьте пустым, чтобы не менять">
+            <div class="hint" th:if="${hasBybitApiSecret}">Секрет уже сохранен.</div>
+        </div>
+        <div class="row" style="gap:12px; margin-top:8px">
+            <button class="btn btn-primary" type="submit">Сохранить ключи</button>
+        </div>
+    </form>
+
+    <form th:action="@{/profile/bybit}" method="post" class="row" style="margin-top:8px">
+        <input type="hidden" name="clearCredentials" value="true">
+        <button class="btn btn-secondary" type="submit">Очистить ключи Bybit</button>
+    </form>
+
+    <div class="hint" th:if="${param.bybitSaved}">Ключи Bybit сохранены.</div>
+    <div class="hint hint--error" th:if="${param.bybitError}">Не удалось сохранить ключи Bybit.</div>
 
     <h3>Активные стратегии</h3>
     <ul class="list">

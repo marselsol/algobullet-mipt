@@ -1,15 +1,14 @@
 package com.algobullet_mipt.controller;
 
+import com.algobullet_mipt.entity.UserAccount;
 import com.algobullet_mipt.portfolio.PortfolioAnalysis;
 import com.algobullet_mipt.portfolio.PortfolioAnalysisService;
-import jakarta.servlet.http.HttpSession;
+import com.algobullet_mipt.service.UserAccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -17,12 +16,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PortfolioController {
 
     private final PortfolioAnalysisService analysisService;
+    private final UserAccountService userAccountService;
 
     @GetMapping
-    public String portfolio(Model model, HttpSession session) {
+    public String portfolio(Model model) {
         model.addAttribute("title", "Анализ портфеля - ALGOBULLET");
 
-        boolean connected = Boolean.TRUE.equals(session.getAttribute("bybitConnected"));
+        UserAccount user = userAccountService.getCurrentUser().orElse(null);
+        boolean connected = user != null
+                && user.getBybitApiKey() != null && !user.getBybitApiKey().isBlank()
+                && user.getBybitApiSecret() != null && !user.getBybitApiSecret().isBlank();
+
         model.addAttribute("bybitConnected", connected);
 
         PortfolioAnalysis analysis = analysisService.getStubAnalysis();
@@ -30,15 +34,4 @@ public class PortfolioController {
 
         return "portfolio";
     }
-
-    @PostMapping("/connect")
-    public String connectBybit(@RequestParam("apiKey") String apiKey,
-                               @RequestParam("apiSecret") String apiSecret,
-                               HttpSession session) {
-        // Заглушка: сохраняем флаг подключения в сессии, ключи не храним и никуда не отправляем
-        session.setAttribute("bybitConnected", true);
-        // Возврат на страницу анализа портфеля
-        return "redirect:/portfolio";
-    }
 }
-

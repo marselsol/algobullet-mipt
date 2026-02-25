@@ -5,3 +5,5 @@
       file: db/changelog/001-create-users.yaml
   - include:
       file: db/changelog/002-create-signal-history.yaml
+  - include:
+      file: db/changelog/003-add-bybit-api-credentials-to-users.yaml
