@@ -9,12 +9,24 @@ import java.util.Set;
 
 public class PumpSettings {
     private boolean enabled = true;
-    private double minChangePercent = 3.0;
-    private String timeframe = "5m";
+    private double minChangePercent = 0.8;
+    private String timeframe = "1m";
     private final Set<String> watchlist = new LinkedHashSet<>();
 
     public PumpSettings() {
-        Collections.addAll(watchlist, "BTCUSDT", "ETHUSDT", "SOLUSDT");
+        Collections.addAll(
+                watchlist,
+                "BTCUSDT",
+                "ETHUSDT",
+                "SOLUSDT",
+                "XRPUSDT",
+                "DOGEUSDT",
+                "ADAUSDT",
+                "BNBUSDT",
+                "LINKUSDT",
+                "AVAXUSDT",
+                "TRXUSDT"
+        );
     }
 
     public boolean isEnabled() {

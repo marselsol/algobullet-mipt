@@ -18,8 +18,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(
-        prefix = "app.features",
-        name = "use-real-market-data",
+        prefix = "app.pump",
+        name = "use-rest-polling-fallback",
         havingValue = "true"
 )
 @Slf4j

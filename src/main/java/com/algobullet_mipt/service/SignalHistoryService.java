@@ -18,6 +18,7 @@ public class SignalHistoryService {
 
     public static final String SOURCE_EMA_STREAM = "EMA_STREAM";
     public static final String SOURCE_PUMP_REST = "PUMP_REST";
+    public static final String SOURCE_PUMP_WS = "PUMP_WS";
 
     private final SignalHistoryRepository repository;
 
@@ -40,6 +41,11 @@ public class SignalHistoryService {
     @Transactional
     public void savePumpRestSignal(Signal signal, String timeframe) {
         saveSignal(signal, timeframe, SOURCE_PUMP_REST);
+    }
+
+    @Transactional
+    public void savePumpWsSignal(Signal signal, String timeframe) {
+        saveSignal(signal, timeframe, SOURCE_PUMP_WS);
     }
 
     private void saveSignal(Signal signal, String timeframe, String source) {
