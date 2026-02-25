@@ -3,9 +3,11 @@ package com.algobullet_mipt.controller;
 import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import com.algobullet_mipt.model.EmaSettings;
 import com.algobullet_mipt.service.SettingsService;
+import com.algobullet_mipt.service.ema.EmaStreamSignalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +22,7 @@ public class EmaSettingsController {
 
     private final SettingsService settings;
     private final MarketDataPort marketDataPort;
+    private final ObjectProvider<EmaStreamSignalService> emaStreamSignalServiceProvider;
 
     @GetMapping
     public String view(Model model) {
@@ -35,6 +38,7 @@ public class EmaSettingsController {
         current.setFast(form.getFast());
         current.setSlow(form.getSlow());
         current.setTimeframe(form.getTimeframe());
+        refreshEmaStreamSubscriptions();
         return "redirect:/settings/ema?ok";
     }
 
@@ -52,6 +56,7 @@ public class EmaSettingsController {
 
         boolean added = settings.ema().addToWatchlist(normalized.get(), fast, slow, timeframe);
         if (added) {
+            refreshEmaStreamSubscriptions();
             redirectAttributes.addAttribute("watchlistAdded", "true");
         } else {
             redirectAttributes.addAttribute("watchlistError", "true");
@@ -64,10 +69,18 @@ public class EmaSettingsController {
                                RedirectAttributes redirectAttributes) {
         boolean removed = settings.ema().removeFromWatchlist(symbol);
         if (removed) {
+            refreshEmaStreamSubscriptions();
             redirectAttributes.addAttribute("watchlistRemoved", "true");
         } else {
             redirectAttributes.addAttribute("watchlistError", "true");
         }
         return "redirect:/settings/ema";
+    }
+
+    private void refreshEmaStreamSubscriptions() {
+        EmaStreamSignalService service = emaStreamSignalServiceProvider.getIfAvailable();
+        if (service != null) {
+            service.refreshSubscriptions();
+        }
     }
 }
