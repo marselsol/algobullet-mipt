@@ -7,6 +7,7 @@ import com.algobullet_mipt.model.Signal;
 import com.algobullet_mipt.service.ema.EmaStreamSignalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ public class SignalFeedService {
     private final SignalPort signalPort;
     private final ObjectProvider<EmaStreamSignalService> emaStreamSignalServiceProvider;
     private final ObjectProvider<SignalHistoryService> signalHistoryServiceProvider;
+    @Value("${app.features.use-real-market-data:false}")
+    private boolean useRealMarketData;
 
     public List<Signal> buildFeed(PumpSettings pump, EmaSettings ema) {
         List<Signal> result = new ArrayList<>();
@@ -34,9 +37,13 @@ public class SignalFeedService {
             }
         }
 
-        List<Signal> adapterSignals = signalPort.buildFeed(pump, ema);
-        persistPumpSignals(adapterSignals, pump, signalHistoryService);
-        result.addAll(adapterSignals);
+        // В real-режиме dashboard не должен запускать тяжелые REST/ta4j расчеты.
+        // Источником служат history + фоновые анализаторы.
+        if (!useRealMarketData) {
+            List<Signal> adapterSignals = signalPort.buildFeed(pump, ema);
+            persistPumpSignals(adapterSignals, pump, signalHistoryService);
+            result.addAll(adapterSignals);
+        }
 
         if (ema.isEnabled()) {
             EmaStreamSignalService emaStreamSignalService = emaStreamSignalServiceProvider.getIfAvailable();
