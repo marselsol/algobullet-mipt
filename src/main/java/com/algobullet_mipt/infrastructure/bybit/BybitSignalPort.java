@@ -20,8 +20,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @ConditionalOnProperty(
@@ -41,13 +43,7 @@ public class BybitSignalPort implements SignalPort {
         Instant now = Instant.now();
 
         if (pump.isEnabled()) {
-            signals.add(new Signal(
-                    now.minusSeconds(30),
-                    "MARKET",
-                    "PUMP",
-                    "Pump screener will be switched to real market data in the next step",
-                    1
-            ));
+            signals.addAll(buildPumpSignals(pump, now));
         }
 
         if (ema.isEnabled()) {
@@ -77,6 +73,84 @@ public class BybitSignalPort implements SignalPort {
 
         signals.sort(Comparator.comparing(Signal::time).reversed());
         return signals;
+    }
+
+    private List<Signal> buildPumpSignals(PumpSettings pump, Instant now) {
+        try {
+            List<String> candidates = resolvePumpCandidates(pump);
+            List<Signal> result = new ArrayList<>();
+
+            for (String rawSymbol : candidates) {
+                try {
+                    Optional<String> normalized = marketDataPort.normalizeLinearSymbol(rawSymbol);
+                    if (normalized.isEmpty()) {
+                        continue;
+                    }
+
+                    List<KlineCandle> candles = marketDataPort.getRecentKlines(normalized.get(), pump.getTimeframe(), 3);
+                    Signal pumpSignal = buildPumpSignalFromCandles(normalized.get(), pump, candles, now);
+                    if (pumpSignal != null) {
+                        result.add(pumpSignal);
+                    }
+                } catch (Exception ex) {
+                    log.debug("Pump screener failed for {} {}: {}", rawSymbol, pump.getTimeframe(), ex.getMessage());
+                }
+            }
+
+            return result;
+        } catch (Exception ex) {
+            log.warn("Pump screener failed: {}", ex.getMessage());
+            return List.of();
+        }
+    }
+
+    private List<String> resolvePumpCandidates(PumpSettings pump) {
+        Set<String> candidates = new LinkedHashSet<>();
+        candidates.addAll(pump.getWatchlist());
+
+        // Если watchlist пустой, используем ликвидные символы как fallback.
+        if (candidates.isEmpty()) {
+            candidates.addAll(marketDataPort.getTopUsdtSymbols(20));
+        }
+
+        return candidates.stream().limit(30).toList();
+    }
+
+    private Signal buildPumpSignalFromCandles(String symbol, PumpSettings pump, List<KlineCandle> candles, Instant fallbackTime) {
+        if (candles == null || candles.size() < 2) {
+            return null;
+        }
+
+        KlineCandle previous = candles.get(candles.size() - 2);
+        KlineCandle latest = candles.get(candles.size() - 1);
+        if (previous.close() == null || latest.close() == null || previous.close().signum() <= 0) {
+            return null;
+        }
+
+        var changePercent = latest.close()
+                .subtract(previous.close())
+                .multiply(java.math.BigDecimal.valueOf(100))
+                .divide(previous.close(), 4, java.math.RoundingMode.HALF_UP);
+
+        if (changePercent.doubleValue() < pump.getMinChangePercent()) {
+            return null;
+        }
+
+        int strength = Math.max(1, Math.min(5, (int) Math.round(changePercent.doubleValue() / Math.max(1.0, pump.getMinChangePercent()))));
+        Instant signalTime = latest.openTime() != null ? latest.openTime() : fallbackTime;
+
+        return new Signal(
+                signalTime,
+                symbol,
+                "PUMP",
+                "Рост %.2f%% за %s (close %.4f -> %.4f)".formatted(
+                        changePercent.doubleValue(),
+                        pump.getTimeframe(),
+                        previous.close().doubleValue(),
+                        latest.close().doubleValue()
+                ),
+                strength
+        );
     }
 
     private Signal buildEmaSignal(String symbol, EmaSettings.EmaWatch watch, List<KlineCandle> candles) {

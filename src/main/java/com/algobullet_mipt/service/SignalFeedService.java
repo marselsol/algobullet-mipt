@@ -34,7 +34,9 @@ public class SignalFeedService {
             }
         }
 
-        result.addAll(signalPort.buildFeed(pump, ema));
+        List<Signal> adapterSignals = signalPort.buildFeed(pump, ema);
+        persistPumpSignals(adapterSignals, pump, signalHistoryService);
+        result.addAll(adapterSignals);
 
         if (ema.isEnabled()) {
             EmaStreamSignalService emaStreamSignalService = emaStreamSignalServiceProvider.getIfAvailable();
@@ -57,6 +59,26 @@ public class SignalFeedService {
                 .sorted(Comparator.comparing(Signal::time).reversed())
                 .limit(50)
                 .toList();
+    }
+
+    private void persistPumpSignals(List<Signal> signals, PumpSettings pump, SignalHistoryService signalHistoryService) {
+        if (signalHistoryService == null || signals == null || signals.isEmpty()) {
+            return;
+        }
+
+        for (Signal signal : signals) {
+            if (signal == null || signal.type() == null) {
+                continue;
+            }
+            if (!"PUMP".equalsIgnoreCase(signal.type())) {
+                continue;
+            }
+            try {
+                signalHistoryService.savePumpRestSignal(signal, pump != null ? pump.getTimeframe() : null);
+            } catch (Exception ignored) {
+                // История сигналов не должна ломать построение дашборда.
+            }
+        }
     }
 
     private String dedupKey(Signal signal) {

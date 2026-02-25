@@ -17,6 +17,7 @@ import java.util.List;
 public class SignalHistoryService {
 
     public static final String SOURCE_EMA_STREAM = "EMA_STREAM";
+    public static final String SOURCE_PUMP_REST = "PUMP_REST";
 
     private final SignalHistoryRepository repository;
 
@@ -33,13 +34,22 @@ public class SignalHistoryService {
 
     @Transactional
     public void saveEmaStreamSignal(Signal signal, String timeframe) {
+        saveSignal(signal, timeframe, SOURCE_EMA_STREAM);
+    }
+
+    @Transactional
+    public void savePumpRestSignal(Signal signal, String timeframe) {
+        saveSignal(signal, timeframe, SOURCE_PUMP_REST);
+    }
+
+    private void saveSignal(Signal signal, String timeframe, String source) {
         if (signal == null || signal.time() == null || signal.symbol() == null || signal.type() == null) {
             return;
         }
 
         String normalizedTimeframe = normalizeNullable(timeframe);
         if (repository.existsBySourceAndSymbolAndTimeframeAndTypeAndSignalTime(
-                SOURCE_EMA_STREAM,
+                source,
                 signal.symbol(),
                 normalizedTimeframe,
                 signal.type(),
@@ -53,7 +63,7 @@ public class SignalHistoryService {
         entry.setSymbol(signal.symbol());
         entry.setTimeframe(normalizedTimeframe);
         entry.setType(signal.type());
-        entry.setSource(SOURCE_EMA_STREAM);
+        entry.setSource(source);
         entry.setText(trimToLength(signal.text(), 512));
         entry.setStrength(signal.strength());
 
