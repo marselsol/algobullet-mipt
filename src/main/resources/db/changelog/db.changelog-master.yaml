@@ -3,3 +3,5 @@
       file: db/changelog/000-create-schema.yaml
   - include:
       file: db/changelog/001-create-users.yaml
+  - include:
+      file: db/changelog/002-create-signal-history.yaml

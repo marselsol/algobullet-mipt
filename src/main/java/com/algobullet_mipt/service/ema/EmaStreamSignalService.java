@@ -5,12 +5,14 @@ import com.algobullet_mipt.domain.market.model.KlineStreamUpdate;
 import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import com.algobullet_mipt.model.EmaSettings;
 import com.algobullet_mipt.model.Signal;
+import com.algobullet_mipt.service.SignalHistoryService;
 import com.algobullet_mipt.service.SettingsService;
 import com.algobullet_mipt.service.market.KlineStreamRuntimeService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.ta4j.core.BarSeries;
@@ -47,6 +49,7 @@ public class EmaStreamSignalService {
     private final SettingsService settingsService;
     private final MarketDataPort marketDataPort;
     private final KlineStreamRuntimeService runtimeService;
+    private final ObjectProvider<SignalHistoryService> signalHistoryServiceProvider;
 
     private final Map<WatchKey, WatchSubscription> subscriptions = new ConcurrentHashMap<>();
     private final Deque<Signal> recentSignals = new ArrayDeque<>();
@@ -158,7 +161,21 @@ public class EmaStreamSignalService {
 
         if (signalToStore != null) {
             addRecentSignal(signalToStore);
+            saveSignalToHistory(signalToStore, state.watch.getTimeframe());
             log.info("EMA stream signal: {} {} {}", signalToStore.symbol(), signalToStore.type(), signalToStore.text());
+        }
+    }
+
+    private void saveSignalToHistory(Signal signal, String timeframe) {
+        SignalHistoryService signalHistoryService = signalHistoryServiceProvider.getIfAvailable();
+        if (signalHistoryService == null) {
+            return;
+        }
+        try {
+            signalHistoryService.saveEmaStreamSignal(signal, timeframe);
+        } catch (Exception ex) {
+            log.warn("EMA stream: не удалось сохранить сигнал в БД {} {}: {}",
+                    signal.symbol(), signal.type(), ex.getMessage());
         }
     }
 

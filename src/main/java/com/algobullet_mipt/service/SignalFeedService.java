@@ -20,9 +20,21 @@ public class SignalFeedService {
 
     private final SignalPort signalPort;
     private final ObjectProvider<EmaStreamSignalService> emaStreamSignalServiceProvider;
+    private final ObjectProvider<SignalHistoryService> signalHistoryServiceProvider;
 
     public List<Signal> buildFeed(PumpSettings pump, EmaSettings ema) {
-        List<Signal> result = new ArrayList<>(signalPort.buildFeed(pump, ema));
+        List<Signal> result = new ArrayList<>();
+
+        SignalHistoryService signalHistoryService = signalHistoryServiceProvider.getIfAvailable();
+        if (signalHistoryService != null) {
+            try {
+                result.addAll(signalHistoryService.getRecentSignals(50));
+            } catch (Exception ignored) {
+                // Падающая БД не должна ломать дашборд, ниже сработает fallback.
+            }
+        }
+
+        result.addAll(signalPort.buildFeed(pump, ema));
 
         if (ema.isEnabled()) {
             EmaStreamSignalService emaStreamSignalService = emaStreamSignalServiceProvider.getIfAvailable();
