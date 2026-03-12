@@ -8,6 +8,10 @@ import java.util.Locale;
 import java.util.Set;
 
 public class PumpSettings {
+    private static final Set<String> SUPPORTED_TIMEFRAMES = Set.of(
+            "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w"
+    );
+
     private boolean enabled = true;
     private double minChangePercent = 0.8;
     private String timeframe = "1m";
@@ -50,7 +54,9 @@ public class PumpSettings {
     }
 
     public void setTimeframe(String timeframe) {
-        this.timeframe = timeframe;
+        if (isSupportedTimeframe(timeframe)) {
+            this.timeframe = timeframe;
+        }
     }
 
     public List<String> getWatchlist() {
@@ -85,5 +91,9 @@ public class PumpSettings {
             return null;
         }
         return candidate;
+    }
+
+    private boolean isSupportedTimeframe(String timeframe) {
+        return timeframe != null && SUPPORTED_TIMEFRAMES.contains(timeframe);
     }
 }

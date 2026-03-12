@@ -3,6 +3,10 @@ package com.algobullet_mipt.model;
 import java.util.*;
 
 public class EmaSettings {
+    private static final Set<String> SUPPORTED_TIMEFRAMES = Set.of(
+            "1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "12h", "1d", "1w"
+    );
+
     // Global toggle and defaults for new entries
     private boolean enabled = true;
     private int fast = 9;
@@ -45,7 +49,9 @@ public class EmaSettings {
     }
 
     public void setTimeframe(String timeframe) {
-        this.timeframe = timeframe;
+        if (isSupportedTimeframe(timeframe)) {
+            this.timeframe = timeframe;
+        }
     }
 
     // Watchlist API
@@ -78,7 +84,7 @@ public class EmaSettings {
         if (fast < 3 || fast > 100) return false;
         if (slow < 5 || slow > 200) return false;
         if (fast >= slow) return false;
-        return timeframe != null && timeframe.matches("(1m|3m|5m|15m|1h|4h|1d)");
+        return isSupportedTimeframe(timeframe);
     }
 
     private String normalizeSymbol(String symbol) {
@@ -91,6 +97,10 @@ public class EmaSettings {
 
     private String watchKey(String symbol, int fast, int slow, String timeframe) {
         return String.join("|", symbol, String.valueOf(fast), String.valueOf(slow), timeframe);
+    }
+
+    private boolean isSupportedTimeframe(String timeframe) {
+        return timeframe != null && SUPPORTED_TIMEFRAMES.contains(timeframe);
     }
 
     // DTO for per-symbol EMA config
