@@ -23,7 +23,6 @@ import org.ta4j.core.num.Num;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class EmaStreamSignalService {
 
-    private static final int MAX_SIGNALS = 200;
     private static final int MAX_CANDLES_PER_WATCH = 500;
 
     private final SettingsService settingsService;
@@ -49,8 +47,6 @@ public class EmaStreamSignalService {
     private final ObjectProvider<SignalHistoryService> signalHistoryServiceProvider;
 
     private final Map<WatchKey, WatchSubscription> subscriptions = new ConcurrentHashMap<>();
-    private final Deque<Signal> recentSignals = new ArrayDeque<>();
-    private final Object recentSignalsMonitor = new Object();
 
     @PostConstruct
     public void init() {
@@ -99,18 +95,6 @@ public class EmaStreamSignalService {
                 log.warn("EMA stream: не удалось создать подписку {} {}: {}",
                         watch.getSymbol(), watch.getTimeframe(), ex.getMessage());
             }
-        }
-    }
-
-    public List<Signal> getRecentSignals(int limit) {
-        if (limit <= 0) {
-            return List.of();
-        }
-        synchronized (recentSignalsMonitor) {
-            return recentSignals.stream()
-                    .sorted(Comparator.comparing(Signal::time).reversed())
-                    .limit(limit)
-                    .toList();
         }
     }
 
@@ -165,7 +149,6 @@ public class EmaStreamSignalService {
         }
 
         if (signalToStore != null) {
-            addRecentSignal(signalToStore);
             saveSignalToHistory(signalToStore, state.watch.getTimeframe());
             log.info("EMA stream signal: {} {} {}", signalToStore.symbol(), signalToStore.type(), signalToStore.text());
         }
@@ -246,15 +229,6 @@ public class EmaStreamSignalService {
                 ),
                 5
         );
-    }
-
-    private void addRecentSignal(Signal signal) {
-        synchronized (recentSignalsMonitor) {
-            recentSignals.addFirst(signal);
-            while (recentSignals.size() > MAX_SIGNALS) {
-                recentSignals.removeLast();
-            }
-        }
     }
 
     private void upsertCandle(Deque<KlineCandle> candles, KlineCandle candle) {
