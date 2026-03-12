@@ -66,8 +66,11 @@ public class EmaSettingsController {
 
     @PostMapping("/watchlist/remove")
     public String removeSymbol(@RequestParam("symbol") String symbol,
+                               @RequestParam("fast") int fast,
+                               @RequestParam("slow") int slow,
+                               @RequestParam("timeframe") String timeframe,
                                RedirectAttributes redirectAttributes) {
-        boolean removed = settings.ema().removeFromWatchlist(symbol);
+        boolean removed = settings.ema().removeFromWatchlist(symbol, fast, slow, timeframe);
         if (removed) {
             refreshEmaStreamSubscriptions();
             redirectAttributes.addAttribute("watchlistRemoved", "true");

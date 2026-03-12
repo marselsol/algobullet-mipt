@@ -56,6 +56,9 @@
             <div class="hint">EMA <span th:text="${item.fast}">9</span>/<span th:text="${item.slow}">21</span>, TF: <span th:text="${item.timeframe}">15m</span></div>
             <form th:action="@{/settings/ema/watchlist/remove}" method="post">
                 <input type="hidden" name="symbol" th:value="${item.symbol}">
+                <input type="hidden" name="fast" th:value="${item.fast}">
+                <input type="hidden" name="slow" th:value="${item.slow}">
+                <input type="hidden" name="timeframe" th:value="${item.timeframe}">
                 <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}">
                 <button class="btn btn-secondary btn-small" type="submit">Удалить</button>
             </form>

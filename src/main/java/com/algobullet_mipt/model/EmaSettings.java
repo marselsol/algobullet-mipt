@@ -9,7 +9,7 @@ public class EmaSettings {
     private int slow = 21;
     private String timeframe = "1m";
 
-    // Per-symbol configurations, preserve insertion order
+    // Конфигурации по symbol + fast + slow + timeframe, сохраняем порядок добавления
     private final Map<String, EmaWatch> watchlist = new LinkedHashMap<>();
 
     public EmaSettings() {
@@ -57,15 +57,17 @@ public class EmaSettings {
         String normalized = normalizeSymbol(symbol);
         if (normalized == null) return false;
         if (!isValidParams(fast, slow, timeframe)) return false;
-        if (watchlist.containsKey(normalized)) return false; // avoid duplicates for now
-        watchlist.put(normalized, new EmaWatch(normalized, fast, slow, timeframe));
+        String key = watchKey(normalized, fast, slow, timeframe);
+        if (watchlist.containsKey(key)) return false;
+        watchlist.put(key, new EmaWatch(normalized, fast, slow, timeframe));
         return true;
     }
 
-    public boolean removeFromWatchlist(String symbol) {
+    public boolean removeFromWatchlist(String symbol, int fast, int slow, String timeframe) {
         String normalized = normalizeSymbol(symbol);
         if (normalized == null) return false;
-        return watchlist.remove(normalized) != null;
+        if (!isValidParams(fast, slow, timeframe)) return false;
+        return watchlist.remove(watchKey(normalized, fast, slow, timeframe)) != null;
     }
 
     public void clearWatchlist() {
@@ -85,6 +87,10 @@ public class EmaSettings {
         if (candidate.isEmpty()) return null;
         if (!candidate.matches("[A-Z0-9]{2,20}")) return null;
         return candidate;
+    }
+
+    private String watchKey(String symbol, int fast, int slow, String timeframe) {
+        return String.join("|", symbol, String.valueOf(fast), String.valueOf(slow), timeframe);
     }
 
     // DTO for per-symbol EMA config
