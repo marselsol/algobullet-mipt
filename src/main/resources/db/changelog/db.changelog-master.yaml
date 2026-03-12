@@ -8,8 +8,4 @@
   - include:
       file: db/changelog/003-add-bybit-api-credentials-to-users.yaml
   - include:
-      file: db/changelog/004-add-strategy-settings-to-users.yaml
-  - include:
-      file: db/changelog/005-add-user-to-signal-history.yaml
-  - include:
-      file: db/changelog/006-drop-legacy-signal-history-unique.yaml
+      file: db/changelog/007-create-normalized-user-strategy-settings.yaml

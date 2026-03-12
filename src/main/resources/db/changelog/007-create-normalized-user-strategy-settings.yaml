@@ -1,0 +1,177 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-create-normalized-user-strategy-settings
+      author: codex
+      preConditions:
+        onFail: MARK_RAN
+        onError: HALT
+        not:
+          tableExists:
+            schemaName: algo
+            tableName: user_pump_settings
+      changes:
+        - createTable:
+            schemaName: algo
+            tableName: user_pump_settings
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: min_change_percent
+                  type: DOUBLE PRECISION
+                  defaultValueNumeric: 0.8
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timeframe
+                  type: VARCHAR(16)
+                  defaultValue: "1m"
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: user_pump_settings
+            baseTableSchemaName: algo
+            baseColumnNames: user_id
+            constraintName: fk_user_pump_settings_user
+            referencedTableName: app_users
+            referencedTableSchemaName: algo
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createTable:
+            schemaName: algo
+            tableName: user_pump_watchlist
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: symbol
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: user_pump_watchlist
+            baseTableSchemaName: algo
+            baseColumnNames: user_id
+            constraintName: fk_user_pump_watchlist_user
+            referencedTableName: app_users
+            referencedTableSchemaName: algo
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            schemaName: algo
+            tableName: user_pump_watchlist
+            columnNames: user_id, symbol
+            constraintName: uq_user_pump_watchlist_item
+        - createTable:
+            schemaName: algo
+            tableName: user_ema_settings
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fast
+                  type: INT
+                  defaultValueNumeric: 9
+                  constraints:
+                    nullable: false
+              - column:
+                  name: slow
+                  type: INT
+                  defaultValueNumeric: 21
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timeframe
+                  type: VARCHAR(16)
+                  defaultValue: "1m"
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: user_ema_settings
+            baseTableSchemaName: algo
+            baseColumnNames: user_id
+            constraintName: fk_user_ema_settings_user
+            referencedTableName: app_users
+            referencedTableSchemaName: algo
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createTable:
+            schemaName: algo
+            tableName: user_ema_watchlist
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: symbol
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: fast
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: slow
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timeframe
+                  type: VARCHAR(16)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: user_ema_watchlist
+            baseTableSchemaName: algo
+            baseColumnNames: user_id
+            constraintName: fk_user_ema_watchlist_user
+            referencedTableName: app_users
+            referencedTableSchemaName: algo
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            schemaName: algo
+            tableName: user_ema_watchlist
+            columnNames: user_id, symbol, fast, slow, timeframe
+            constraintName: uq_user_ema_watchlist_item
