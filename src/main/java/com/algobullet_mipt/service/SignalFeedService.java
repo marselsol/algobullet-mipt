@@ -4,7 +4,6 @@ import com.algobullet_mipt.domain.signal.port.SignalPort;
 import com.algobullet_mipt.model.EmaSettings;
 import com.algobullet_mipt.model.PumpSettings;
 import com.algobullet_mipt.model.Signal;
-import com.algobullet_mipt.service.ema.EmaStreamSignalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,8 +18,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SignalFeedService {
 
+    private static final int DASHBOARD_SIGNAL_LIMIT = 30;
+
     private final SignalPort signalPort;
-    private final ObjectProvider<EmaStreamSignalService> emaStreamSignalServiceProvider;
     private final ObjectProvider<SignalHistoryService> signalHistoryServiceProvider;
     @Value("${app.features.use-real-market-data:false}")
     private boolean useRealMarketData;
@@ -31,7 +31,7 @@ public class SignalFeedService {
         SignalHistoryService signalHistoryService = signalHistoryServiceProvider.getIfAvailable();
         if (signalHistoryService != null) {
             try {
-                result.addAll(signalHistoryService.getRecentSignals(50));
+                result.addAll(signalHistoryService.getRecentSignals(DASHBOARD_SIGNAL_LIMIT));
             } catch (Exception ignored) {
                 // Падающая БД не должна ломать дашборд, ниже сработает fallback.
             }
@@ -45,12 +45,6 @@ public class SignalFeedService {
             result.addAll(adapterSignals);
         }
 
-        if (ema.isEnabled()) {
-            EmaStreamSignalService emaStreamSignalService = emaStreamSignalServiceProvider.getIfAvailable();
-            if (emaStreamSignalService != null) {
-                result.addAll(emaStreamSignalService.getRecentSignals(20));
-            }
-        }
 
         // Убираем дубли, если одинаковый сигнал пришел и из REST-пересчета, и из stream-потока.
         Map<String, Signal> deduplicated = result.stream()
@@ -64,7 +58,7 @@ public class SignalFeedService {
 
         return deduplicated.values().stream()
                 .sorted(Comparator.comparing(Signal::time).reversed())
-                .limit(50)
+                .limit(DASHBOARD_SIGNAL_LIMIT)
                 .toList();
     }
 

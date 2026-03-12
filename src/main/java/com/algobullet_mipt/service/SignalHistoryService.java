@@ -6,6 +6,7 @@ import com.algobullet_mipt.repository.SignalHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +28,7 @@ public class SignalHistoryService {
         if (limit <= 0) {
             return List.of();
         }
-        return repository.findTop50ByOrderBySignalTimeDescIdDesc().stream()
-                .limit(limit)
+        return repository.findByOrderBySignalTimeDescIdDesc(PageRequest.of(0, limit)).stream()
                 .map(this::toSignal)
                 .toList();
     }
