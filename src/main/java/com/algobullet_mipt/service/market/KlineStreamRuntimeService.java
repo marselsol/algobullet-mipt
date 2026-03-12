@@ -55,6 +55,8 @@ public class KlineStreamRuntimeService {
                 shouldSubscribe = true;
             }
             state.listenerIds.add(listenerId);
+            log.info("Подписан listener на канал свечей: {} {} listeners={}",
+                    channel.symbol(), channel.timeframe(), state.listenerIds.size());
         }
 
         listeners.put(listenerId, new ListenerRegistration(channel, listener));
@@ -116,6 +118,8 @@ public class KlineStreamRuntimeService {
         boolean shouldUnsubscribe = false;
         synchronized (state) {
             state.listenerIds.remove(listenerId);
+            log.info("Отписан listener от канала свечей: {} {} listeners={}",
+                    channel.symbol(), channel.timeframe(), state.listenerIds.size());
             if (state.listenerIds.isEmpty()) {
                 shouldUnsubscribe = true;
             }
@@ -201,6 +205,18 @@ public class KlineStreamRuntimeService {
                 .filter(entry -> hasListeners(entry.getValue()))
                 .map(Map.Entry::getKey)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    }
+
+    public int getListenerCount(String symbol, String timeframe) {
+        KlineStreamChannel channel = new KlineStreamChannel(symbol, timeframe);
+        ChannelState state = channels.get(channel);
+        if (state == null) {
+            return 0;
+        }
+
+        synchronized (state) {
+            return state.listenerIds.size();
+        }
     }
 
     private boolean hasListeners(ChannelState state) {
