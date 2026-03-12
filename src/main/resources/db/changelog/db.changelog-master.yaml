@@ -11,3 +11,5 @@
       file: db/changelog/004-add-strategy-settings-to-users.yaml
   - include:
       file: db/changelog/005-add-user-to-signal-history.yaml
+  - include:
+      file: db/changelog/006-drop-legacy-signal-history-unique.yaml

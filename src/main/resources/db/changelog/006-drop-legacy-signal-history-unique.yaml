@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-drop-legacy-signal-history-unique
+      author: codex
+      preConditions:
+        onFail: MARK_RAN
+        onError: HALT
+        uniqueConstraintExists:
+          schemaName: algo
+          tableName: signal_history
+          constraintName: uq_signal_history_dedup
+      changes:
+        - dropUniqueConstraint:
+            schemaName: algo
+            tableName: signal_history
+            constraintName: uq_signal_history_dedup
