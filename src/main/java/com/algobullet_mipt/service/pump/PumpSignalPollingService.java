@@ -36,27 +36,30 @@ public class PumpSignalPollingService {
 
     @Scheduled(fixedDelayString = "${app.pump.polling-delay-ms:15000}")
     public void pollOnce() {
-        PumpSettings pump = settingsService.pump();
-        if (!pump.isEnabled()) {
-            return;
-        }
-
-        EmaSettings emaDisabled = new EmaSettings();
-        emaDisabled.setEnabled(false);
-
-        try {
-            List<Signal> signals = signalPort.buildFeed(pump, emaDisabled);
-            for (Signal signal : signals) {
-                if (signal == null || signal.type() == null) {
-                    continue;
-                }
-                if (!"PUMP".equalsIgnoreCase(signal.type())) {
-                    continue;
-                }
-                signalHistoryService.savePumpRestSignal(signal, pump.getTimeframe());
+        for (SettingsService.OwnedPumpSettings owned : settingsService.getAllPumpSettings()) {
+            PumpSettings pump = owned.settings();
+            if (!pump.isEnabled() || pump.getWatchlist().isEmpty()) {
+                continue;
             }
-        } catch (Exception ex) {
-            log.warn("Pump polling error: {}", ex.getMessage());
+
+            EmaSettings emaDisabled = new EmaSettings();
+            emaDisabled.setEnabled(false);
+            emaDisabled.clearWatchlist();
+
+            try {
+                List<Signal> signals = signalPort.buildFeed(pump, emaDisabled);
+                for (Signal signal : signals) {
+                    if (signal == null || signal.type() == null) {
+                        continue;
+                    }
+                    if (!"PUMP".equalsIgnoreCase(signal.type())) {
+                        continue;
+                    }
+                    signalHistoryService.savePumpRestSignal(owned.userId(), signal, pump.getTimeframe());
+                }
+            } catch (Exception ex) {
+                log.warn("Pump polling error for user {}: {}", owned.userId(), ex.getMessage());
+            }
         }
     }
 }

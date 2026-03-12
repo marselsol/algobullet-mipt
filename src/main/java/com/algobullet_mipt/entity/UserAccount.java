@@ -68,6 +68,33 @@ public class UserAccount implements UserDetails {
     @ToString.Exclude
     private String bybitApiSecret;
 
+    @Column(name = "pump_enabled", nullable = false)
+    private boolean pumpEnabled = true;
+
+    @Column(name = "pump_min_change_percent", nullable = false)
+    private double pumpMinChangePercent = 0.8;
+
+    @Column(name = "pump_timeframe", nullable = false, length = 16)
+    private String pumpTimeframe = "1m";
+
+    @Column(name = "pump_watchlist", length = 4000)
+    private String pumpWatchlist;
+
+    @Column(name = "ema_enabled", nullable = false)
+    private boolean emaEnabled = true;
+
+    @Column(name = "ema_fast", nullable = false)
+    private int emaFast = 9;
+
+    @Column(name = "ema_slow", nullable = false)
+    private int emaSlow = 21;
+
+    @Column(name = "ema_timeframe", nullable = false, length = 16)
+    private String emaTimeframe = "1m";
+
+    @Column(name = "ema_watchlist", length = 4000)
+    private String emaWatchlist;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", schema = "algo", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)

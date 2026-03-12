@@ -33,11 +33,7 @@ public class EmaSettingsController {
 
     @PostMapping
     public String update(@ModelAttribute("ema") EmaSettings form) {
-        EmaSettings current = settings.ema();
-        current.setEnabled(form.isEnabled());
-        current.setFast(form.getFast());
-        current.setSlow(form.getSlow());
-        current.setTimeframe(form.getTimeframe());
+        settings.saveEmaSettings(form);
         refreshEmaStreamSubscriptions();
         return "redirect:/settings/ema?ok";
     }
@@ -54,7 +50,7 @@ public class EmaSettingsController {
             return "redirect:/settings/ema";
         }
 
-        boolean added = settings.ema().addToWatchlist(normalized.get(), fast, slow, timeframe);
+        boolean added = settings.addEmaWatch(normalized.get(), fast, slow, timeframe);
         if (added) {
             refreshEmaStreamSubscriptions();
             redirectAttributes.addAttribute("watchlistAdded", "true");
@@ -70,7 +66,7 @@ public class EmaSettingsController {
                                @RequestParam("slow") int slow,
                                @RequestParam("timeframe") String timeframe,
                                RedirectAttributes redirectAttributes) {
-        boolean removed = settings.ema().removeFromWatchlist(symbol, fast, slow, timeframe);
+        boolean removed = settings.removeEmaWatch(symbol, fast, slow, timeframe);
         if (removed) {
             refreshEmaStreamSubscriptions();
             redirectAttributes.addAttribute("watchlistRemoved", "true");

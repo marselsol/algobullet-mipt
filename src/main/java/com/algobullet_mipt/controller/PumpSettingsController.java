@@ -33,10 +33,7 @@ public class PumpSettingsController {
 
     @PostMapping
     public String update(@ModelAttribute("pump") PumpSettings form) {
-        PumpSettings current = settings.pump();
-        current.setEnabled(form.isEnabled());
-        current.setMinChangePercent(form.getMinChangePercent());
-        current.setTimeframe(form.getTimeframe());
+        settings.savePumpSettings(form);
         refreshPumpStreamSubscriptions();
         return "redirect:/settings/pump?ok";
     }
@@ -50,7 +47,7 @@ public class PumpSettingsController {
             return "redirect:/settings/pump";
         }
 
-        boolean added = settings.pump().addToWatchlist(normalized.get());
+        boolean added = settings.addPumpSymbol(normalized.get());
         if (added) {
             refreshPumpStreamSubscriptions();
             redirectAttributes.addAttribute("watchlistAdded", "true");
@@ -63,7 +60,7 @@ public class PumpSettingsController {
     @PostMapping("/watchlist/remove")
     public String removeSymbol(@RequestParam("symbol") String symbol,
                                 RedirectAttributes redirectAttributes) {
-        boolean removed = settings.pump().removeFromWatchlist(symbol);
+        boolean removed = settings.removePumpSymbol(symbol);
         if (removed) {
             refreshPumpStreamSubscriptions();
             redirectAttributes.addAttribute("watchlistRemoved", "true");

@@ -2,7 +2,6 @@ package com.algobullet_mipt.service.pump;
 
 import com.algobullet_mipt.domain.market.model.KlineCandle;
 import com.algobullet_mipt.domain.market.model.KlineStreamUpdate;
-import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import com.algobullet_mipt.model.PumpSettings;
 import com.algobullet_mipt.model.Signal;
 import com.algobullet_mipt.service.SettingsService;
@@ -37,7 +36,6 @@ public class PumpStreamSignalService {
     private static final int HISTORY_LIMIT = 3;
 
     private final SettingsService settingsService;
-    private final MarketDataPort marketDataPort;
     private final KlineStreamRuntimeService runtimeService;
     private final SignalHistoryService signalHistoryService;
 
@@ -57,27 +55,29 @@ public class PumpStreamSignalService {
     }
 
     public synchronized void refreshSubscriptions() {
-        PumpSettings pump = settingsService.pump();
-        String timeframe = pump.getTimeframe();
+        List<SettingsService.OwnedPumpSettings> allSettings = settingsService.getAllPumpSettings();
+        Set<SubscriptionKey> desiredKeys = new LinkedHashSet<>();
 
-        Set<String> desiredSymbols = resolveSymbolsForStreaming(pump);
-        Set<SubscriptionKey> desiredKeys = desiredSymbols.stream()
-                .map(symbol -> new SubscriptionKey(symbol, timeframe))
-                .collect(java.util.stream.Collectors.toSet());
+        for (SettingsService.OwnedPumpSettings owned : allSettings) {
+            PumpSettings pump = owned.settings();
+            if (!pump.isEnabled()) {
+                continue;
+            }
+
+            for (String symbol : pump.getWatchlist()) {
+                desiredKeys.add(new SubscriptionKey(owned.userId(), symbol, pump.getTimeframe()));
+            }
+        }
 
         List<SubscriptionKey> toRemove = subscriptions.keySet().stream()
-                .filter(key -> !desiredKeys.contains(key) || !pump.isEnabled())
+                .filter(key -> !desiredKeys.contains(key))
                 .toList();
         for (SubscriptionKey key : toRemove) {
             SubscriptionState removed = subscriptions.remove(key);
             if (removed != null) {
                 runtimeService.unsubscribe(removed.listenerId());
-                log.info("Pump stream: удалена подписка {} {}", key.symbol(), key.timeframe());
+                log.info("Pump stream: удалена подписка user={} {} {}", key.userId(), key.symbol(), key.timeframe());
             }
-        }
-
-        if (!pump.isEnabled()) {
-            return;
         }
 
         for (SubscriptionKey key : desiredKeys) {
@@ -85,25 +85,23 @@ public class PumpStreamSignalService {
                 continue;
             }
             try {
-                subscriptions.put(key, createSubscription(key, pump.getMinChangePercent()));
+                subscriptions.put(key, createSubscription(key, resolveThreshold(allSettings, key)));
             } catch (Exception ex) {
-                log.warn("Pump stream: не удалось создать подписку {} {}: {}", key.symbol(), key.timeframe(), ex.getMessage());
+                log.warn("Pump stream: не удалось создать подписку user={} {} {}: {}",
+                        key.userId(), key.symbol(), key.timeframe(), ex.getMessage());
             }
         }
     }
 
-    private Set<String> resolveSymbolsForStreaming(PumpSettings pump) {
-        Set<String> symbols = new LinkedHashSet<>(pump.getWatchlist());
-        if (!symbols.isEmpty()) {
-            return symbols;
-        }
-
-        try {
-            symbols.addAll(marketDataPort.getTopUsdtSymbols(20));
-        } catch (Exception ex) {
-            log.warn("Pump stream: не удалось загрузить top symbols для fallback: {}", ex.getMessage());
-        }
-        return symbols;
+    private double resolveThreshold(List<SettingsService.OwnedPumpSettings> allSettings, SubscriptionKey key) {
+        return allSettings.stream()
+                .filter(owned -> key.userId().equals(owned.userId()))
+                .map(SettingsService.OwnedPumpSettings::settings)
+                .filter(PumpSettings::isEnabled)
+                .filter(pump -> key.timeframe().equals(pump.getTimeframe()))
+                .map(PumpSettings::getMinChangePercent)
+                .findFirst()
+                .orElse(0.8);
     }
 
     private SubscriptionState createSubscription(SubscriptionKey key, double thresholdPercent) {
@@ -119,7 +117,8 @@ public class PumpStreamSignalService {
         );
         state.listenerId = listenerId;
 
-        log.info("Pump stream: добавлена подписка {} {} threshold={}%", key.symbol(), key.timeframe(), thresholdPercent);
+        log.info("Pump stream: добавлена подписка user={} {} {} threshold={}%",
+                key.userId(), key.symbol(), key.timeframe(), thresholdPercent);
         return state;
     }
 
@@ -157,9 +156,10 @@ public class PumpStreamSignalService {
 
         if (signal != null) {
             try {
-                signalHistoryService.savePumpWsSignal(signal, state.key.timeframe());
+                signalHistoryService.savePumpWsSignal(state.key.userId(), signal, state.key.timeframe());
             } catch (Exception ex) {
-                log.warn("Pump stream: ошибка сохранения сигнала {} {}: {}", signal.symbol(), signal.type(), ex.getMessage());
+                log.warn("Pump stream: ошибка сохранения сигнала user={} {} {}: {}",
+                        state.key.userId(), signal.symbol(), signal.type(), ex.getMessage());
             }
         }
     }
@@ -207,7 +207,7 @@ public class PumpStreamSignalService {
         }
     }
 
-    private record SubscriptionKey(String symbol, String timeframe) {
+    private record SubscriptionKey(Long userId, String symbol, String timeframe) {
     }
 
     private static final class SubscriptionState {

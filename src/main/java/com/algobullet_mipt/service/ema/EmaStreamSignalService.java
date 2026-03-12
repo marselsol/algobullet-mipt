@@ -62,12 +62,12 @@ public class EmaStreamSignalService {
     }
 
     public synchronized void refreshSubscriptions() {
-        EmaSettings ema = settingsService.ema();
-        Set<WatchKey> desiredKeys = ema.isEnabled()
-                ? ema.getWatchlist().stream()
-                .map(WatchKey::fromWatch)
-                .collect(java.util.stream.Collectors.toSet())
-                : Set.of();
+        List<SettingsService.OwnedEmaSettings> allSettings = settingsService.getAllEmaSettings();
+        Set<WatchKey> desiredKeys = allSettings.stream()
+                .filter(owned -> owned.settings().isEnabled())
+                .flatMap(owned -> owned.settings().getWatchlist().stream()
+                        .map(watch -> WatchKey.fromWatch(owned.userId(), watch)))
+                .collect(java.util.stream.Collectors.toSet());
 
         List<WatchKey> toRemove = subscriptions.keySet().stream()
                 .filter(existing -> !desiredKeys.contains(existing))
@@ -76,30 +76,32 @@ public class EmaStreamSignalService {
             WatchSubscription removed = subscriptions.remove(key);
             if (removed != null) {
                 runtimeService.unsubscribe(removed.listenerId());
-                log.info("EMA stream: удалена подписка {} {}", key.symbol(), key.timeframe());
+                log.info("EMA stream: удалена подписка user={} {} {}", key.userId(), key.symbol(), key.timeframe());
             }
         }
 
-        if (!ema.isEnabled()) {
-            return;
-        }
-
-        for (EmaSettings.EmaWatch watch : ema.getWatchlist()) {
-            WatchKey key = WatchKey.fromWatch(watch);
-            if (subscriptions.containsKey(key)) {
+        for (SettingsService.OwnedEmaSettings owned : allSettings) {
+            if (!owned.settings().isEnabled()) {
                 continue;
             }
-            try {
-                subscriptions.put(key, createSubscription(watch));
-            } catch (Exception ex) {
-                log.warn("EMA stream: не удалось создать подписку {} {}: {}",
-                        watch.getSymbol(), watch.getTimeframe(), ex.getMessage());
+
+            for (EmaSettings.EmaWatch watch : owned.settings().getWatchlist()) {
+                WatchKey key = WatchKey.fromWatch(owned.userId(), watch);
+                if (subscriptions.containsKey(key)) {
+                    continue;
+                }
+                try {
+                    subscriptions.put(key, createSubscription(owned.userId(), watch));
+                } catch (Exception ex) {
+                    log.warn("EMA stream: не удалось создать подписку user={} {} {}: {}",
+                            owned.userId(), watch.getSymbol(), watch.getTimeframe(), ex.getMessage());
+                }
             }
         }
     }
 
-    private WatchSubscription createSubscription(EmaSettings.EmaWatch watch) {
-        WatchState state = new WatchState(watch);
+    private WatchSubscription createSubscription(Long userId, EmaSettings.EmaWatch watch) {
+        WatchState state = new WatchState(userId, watch);
         int historyLimit = calculateHistoryLimit(watch);
 
         runtimeService.ensureRecentCandles(watch.getSymbol(), watch.getTimeframe(), historyLimit);
@@ -112,8 +114,8 @@ public class EmaStreamSignalService {
                 update -> onKlineUpdate(state, update)
         );
 
-        log.info("EMA stream: добавлена подписка {} fast={} slow={} tf={}",
-                watch.getSymbol(), watch.getFast(), watch.getSlow(), watch.getTimeframe());
+        log.info("EMA stream: добавлена подписка user={} {} fast={} slow={} tf={}",
+                userId, watch.getSymbol(), watch.getFast(), watch.getSlow(), watch.getTimeframe());
         return new WatchSubscription(listenerId, state);
     }
 
@@ -149,21 +151,21 @@ public class EmaStreamSignalService {
         }
 
         if (signalToStore != null) {
-            saveSignalToHistory(signalToStore, state.watch.getTimeframe());
-            log.info("EMA stream signal: {} {} {}", signalToStore.symbol(), signalToStore.type(), signalToStore.text());
+            saveSignalToHistory(state.userId, signalToStore, state.watch.getTimeframe());
+            log.info("EMA stream signal: user={} {} {} {}", state.userId, signalToStore.symbol(), signalToStore.type(), signalToStore.text());
         }
     }
 
-    private void saveSignalToHistory(Signal signal, String timeframe) {
+    private void saveSignalToHistory(Long userId, Signal signal, String timeframe) {
         SignalHistoryService signalHistoryService = signalHistoryServiceProvider.getIfAvailable();
         if (signalHistoryService == null) {
             return;
         }
         try {
-            signalHistoryService.saveEmaStreamSignal(signal, timeframe);
+            signalHistoryService.saveEmaStreamSignal(userId, signal, timeframe);
         } catch (Exception ex) {
-            log.warn("EMA stream: не удалось сохранить сигнал в БД {} {}: {}",
-                    signal.symbol(), signal.type(), ex.getMessage());
+            log.warn("EMA stream: не удалось сохранить сигнал в БД user={} {} {}: {}",
+                    userId, signal.symbol(), signal.type(), ex.getMessage());
         }
     }
 
@@ -260,9 +262,9 @@ public class EmaStreamSignalService {
         };
     }
 
-    private record WatchKey(String symbol, int fast, int slow, String timeframe) {
-        private static WatchKey fromWatch(EmaSettings.EmaWatch watch) {
-            return new WatchKey(watch.getSymbol(), watch.getFast(), watch.getSlow(), watch.getTimeframe());
+    private record WatchKey(Long userId, String symbol, int fast, int slow, String timeframe) {
+        private static WatchKey fromWatch(Long userId, EmaSettings.EmaWatch watch) {
+            return new WatchKey(userId, watch.getSymbol(), watch.getFast(), watch.getSlow(), watch.getTimeframe());
         }
     }
 
@@ -271,11 +273,13 @@ public class EmaStreamSignalService {
 
     private static final class WatchState {
         private final Object monitor = new Object();
+        private final Long userId;
         private final EmaSettings.EmaWatch watch;
         private final Deque<KlineCandle> candles = new ArrayDeque<>();
         private Instant lastSignalTime;
 
-        private WatchState(EmaSettings.EmaWatch watch) {
+        private WatchState(Long userId, EmaSettings.EmaWatch watch) {
+            this.userId = userId;
             this.watch = watch;
         }
     }

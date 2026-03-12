@@ -109,10 +109,6 @@ public class BybitSignalPort implements SignalPort {
         candidates.addAll(pump.getWatchlist());
 
         // Если watchlist пустой, используем ликвидные символы как fallback.
-        if (candidates.isEmpty()) {
-            candidates.addAll(marketDataPort.getTopUsdtSymbols(20));
-        }
-
         return candidates.stream().limit(30).toList();
     }
 

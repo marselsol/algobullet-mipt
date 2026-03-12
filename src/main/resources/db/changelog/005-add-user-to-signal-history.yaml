@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-add-user-to-signal-history
+      author: codex
+      preConditions:
+        onFail: MARK_RAN
+        onError: HALT
+        not:
+          columnExists:
+            schemaName: algo
+            tableName: signal_history
+            columnName: user_id
+      changes:
+        - addColumn:
+            schemaName: algo
+            tableName: signal_history
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+        - createIndex:
+            tableName: signal_history
+            schemaName: algo
+            indexName: idx_signal_history_user_time
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: signal_time
+        - addForeignKeyConstraint:
+            baseTableName: signal_history
+            baseTableSchemaName: algo
+            baseColumnNames: user_id
+            constraintName: fk_signal_history_user
+            referencedTableName: app_users
+            referencedTableSchemaName: algo
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - dropUniqueConstraint:
+            tableName: signal_history
+            schemaName: algo
+            constraintName: uq_signal_history_dedup
+        - addUniqueConstraint:
+            tableName: signal_history
+            schemaName: algo
+            columnNames: user_id, source, symbol, timeframe, type, signal_time
+            constraintName: uq_signal_history_user_dedup

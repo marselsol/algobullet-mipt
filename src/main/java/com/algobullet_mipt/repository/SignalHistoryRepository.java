@@ -8,9 +8,10 @@ import java.time.Instant;
 import java.util.List;
 
 public interface SignalHistoryRepository extends JpaRepository<SignalHistoryEntry, Long> {
-    List<SignalHistoryEntry> findByOrderBySignalTimeDescIdDesc(Pageable pageable);
+    List<SignalHistoryEntry> findByUserIdOrderBySignalTimeDescIdDesc(Long userId, Pageable pageable);
 
-    boolean existsBySourceAndSymbolAndTimeframeAndTypeAndSignalTime(
+    boolean existsByUserIdAndSourceAndSymbolAndTimeframeAndTypeAndSignalTime(
+            Long userId,
             String source,
             String symbol,
             String timeframe,
