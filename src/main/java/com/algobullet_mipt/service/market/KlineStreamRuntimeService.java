@@ -4,6 +4,7 @@ import com.algobullet_mipt.domain.market.model.KlineCandle;
 import com.algobullet_mipt.domain.market.model.KlineStreamChannel;
 import com.algobullet_mipt.domain.market.model.KlineStreamUpdate;
 import com.algobullet_mipt.domain.market.port.KlineStreamPort;
+import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,16 +30,22 @@ public class KlineStreamRuntimeService {
     private static final int MAX_CANDLES_PER_CHANNEL = 500;
 
     private final KlineStreamPort klineStreamPort;
+    private final MarketDataPort marketDataPort;
 
     private final ConcurrentMap<KlineStreamChannel, ChannelState> channels = new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID, ListenerRegistration> listeners = new ConcurrentHashMap<>();
 
     public UUID subscribe(String symbol, String timeframe, Consumer<KlineStreamUpdate> listener) {
+        return subscribe(symbol, timeframe, 0, listener);
+    }
+
+    public UUID subscribe(String symbol, String timeframe, int historyLimit, Consumer<KlineStreamUpdate> listener) {
         if (listener == null) {
             throw new IllegalArgumentException("Listener must not be null");
         }
 
         KlineStreamChannel channel = new KlineStreamChannel(symbol, timeframe);
+        ensureRecentCandles(symbol, timeframe, historyLimit);
         UUID listenerId = UUID.randomUUID();
         ChannelState state = channels.computeIfAbsent(channel, ignored -> new ChannelState());
 
@@ -63,6 +70,31 @@ public class KlineStreamRuntimeService {
         }
 
         return listenerId;
+    }
+
+    public void ensureRecentCandles(String symbol, String timeframe, int limit) {
+        if (limit <= 0) {
+            return;
+        }
+
+        KlineStreamChannel channel = new KlineStreamChannel(symbol, timeframe);
+        ChannelState state = channels.computeIfAbsent(channel, ignored -> new ChannelState());
+
+        synchronized (state) {
+            if (state.candles.size() >= limit) {
+                return;
+            }
+
+            try {
+                List<KlineCandle> candles = marketDataPort.getRecentKlines(symbol, timeframe, limit);
+                for (KlineCandle candle : candles) {
+                    upsertCandle(state.candles, candle);
+                }
+                log.info("Подгружена история свечей: {} {} count={}", symbol, timeframe, candles.size());
+            } catch (Exception ex) {
+                log.warn("Не удалось подгрузить историю свечей {} {}: {}", symbol, timeframe, ex.getMessage());
+            }
+        }
     }
 
     public void unsubscribe(UUID listenerId) {

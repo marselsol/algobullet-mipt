@@ -2,11 +2,10 @@ package com.algobullet_mipt.service.ema;
 
 import com.algobullet_mipt.domain.market.model.KlineCandle;
 import com.algobullet_mipt.domain.market.model.KlineStreamUpdate;
-import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import com.algobullet_mipt.model.EmaSettings;
 import com.algobullet_mipt.model.Signal;
-import com.algobullet_mipt.service.SignalHistoryService;
 import com.algobullet_mipt.service.SettingsService;
+import com.algobullet_mipt.service.SignalHistoryService;
 import com.algobullet_mipt.service.market.KlineStreamRuntimeService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -24,7 +23,6 @@ import org.ta4j.core.num.Num;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
@@ -47,7 +45,6 @@ public class EmaStreamSignalService {
     private static final int MAX_CANDLES_PER_WATCH = 500;
 
     private final SettingsService settingsService;
-    private final MarketDataPort marketDataPort;
     private final KlineStreamRuntimeService runtimeService;
     private final ObjectProvider<SignalHistoryService> signalHistoryServiceProvider;
 
@@ -113,11 +110,15 @@ public class EmaStreamSignalService {
 
     private WatchSubscription createSubscription(EmaSettings.EmaWatch watch) {
         WatchState state = new WatchState(watch);
-        preloadCandles(state);
+        int historyLimit = calculateHistoryLimit(watch);
+
+        runtimeService.ensureRecentCandles(watch.getSymbol(), watch.getTimeframe(), historyLimit);
+        preloadFromRuntime(state, historyLimit);
 
         UUID listenerId = runtimeService.subscribe(
                 watch.getSymbol(),
                 watch.getTimeframe(),
+                historyLimit,
                 update -> onKlineUpdate(state, update)
         );
 
@@ -126,23 +127,21 @@ public class EmaStreamSignalService {
         return new WatchSubscription(listenerId, state);
     }
 
-    private void preloadCandles(WatchState state) {
-        int barsToLoad = Math.max(state.watch.getSlow() + 5, 80);
-        try {
-            List<KlineCandle> candles = marketDataPort.getRecentKlines(
-                    state.watch.getSymbol(),
-                    state.watch.getTimeframe(),
-                    barsToLoad
-            );
-            synchronized (state.monitor) {
-                for (KlineCandle candle : candles) {
-                    upsertCandle(state.candles, candle);
-                }
+    private void preloadFromRuntime(WatchState state, int historyLimit) {
+        List<KlineCandle> candles = runtimeService.getRecentCandles(
+                state.watch.getSymbol(),
+                state.watch.getTimeframe(),
+                historyLimit
+        );
+        synchronized (state.monitor) {
+            for (KlineCandle candle : candles) {
+                upsertCandle(state.candles, candle);
             }
-        } catch (Exception ex) {
-            log.warn("EMA stream: не удалось подгрузить историю для {} {}: {}",
-                    state.watch.getSymbol(), state.watch.getTimeframe(), ex.getMessage());
         }
+    }
+
+    private int calculateHistoryLimit(EmaSettings.EmaWatch watch) {
+        return watch.getSlow() + 3;
     }
 
     private void onKlineUpdate(WatchState state, KlineStreamUpdate update) {

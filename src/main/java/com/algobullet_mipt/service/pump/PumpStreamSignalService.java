@@ -19,11 +19,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 public class PumpStreamSignalService {
 
     private static final int MAX_CANDLES_PER_SYMBOL = 20;
+    private static final int HISTORY_LIMIT = 3;
 
     private final SettingsService settingsService;
     private final MarketDataPort marketDataPort;
@@ -109,11 +108,13 @@ public class PumpStreamSignalService {
 
     private SubscriptionState createSubscription(SubscriptionKey key, double thresholdPercent) {
         SubscriptionState state = new SubscriptionState(key, thresholdPercent);
-        preload(state);
+        runtimeService.ensureRecentCandles(key.symbol(), key.timeframe(), HISTORY_LIMIT);
+        preloadFromRuntime(state);
 
         UUID listenerId = runtimeService.subscribe(
                 key.symbol(),
                 key.timeframe(),
+                HISTORY_LIMIT,
                 update -> onKlineUpdate(state, update)
         );
         state.listenerId = listenerId;
@@ -122,16 +123,16 @@ public class PumpStreamSignalService {
         return state;
     }
 
-    private void preload(SubscriptionState state) {
-        try {
-            List<KlineCandle> candles = marketDataPort.getRecentKlines(state.key.symbol(), state.key.timeframe(), 3);
-            synchronized (state.monitor) {
-                for (KlineCandle candle : candles) {
-                    upsertCandle(state.candles, candle);
-                }
+    private void preloadFromRuntime(SubscriptionState state) {
+        List<KlineCandle> candles = runtimeService.getRecentCandles(
+                state.key.symbol(),
+                state.key.timeframe(),
+                HISTORY_LIMIT
+        );
+        synchronized (state.monitor) {
+            for (KlineCandle candle : candles) {
+                upsertCandle(state.candles, candle);
             }
-        } catch (Exception ex) {
-            log.warn("Pump stream: preload failed for {} {}: {}", state.key.symbol(), state.key.timeframe(), ex.getMessage());
         }
     }
 

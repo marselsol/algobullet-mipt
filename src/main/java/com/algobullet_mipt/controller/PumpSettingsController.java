@@ -1,5 +1,6 @@
 package com.algobullet_mipt.controller;
 
+import com.algobullet_mipt.domain.market.port.MarketDataPort;
 import com.algobullet_mipt.model.PumpSettings;
 import com.algobullet_mipt.service.SettingsService;
 import com.algobullet_mipt.service.pump.PumpStreamSignalService;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class PumpSettingsController {
 
     private final SettingsService settings;
+    private final MarketDataPort marketDataPort;
     private final ObjectProvider<PumpStreamSignalService> pumpStreamSignalServiceProvider;
 
     @GetMapping
@@ -42,7 +44,13 @@ public class PumpSettingsController {
     @PostMapping("/watchlist/add")
     public String addSymbol(@RequestParam("symbol") String symbol,
                              RedirectAttributes redirectAttributes) {
-        boolean added = settings.pump().addToWatchlist(symbol);
+        var normalized = marketDataPort.normalizeLinearSymbol(symbol);
+        if (normalized.isEmpty()) {
+            redirectAttributes.addAttribute("watchlistInvalidSymbol", "true");
+            return "redirect:/settings/pump";
+        }
+
+        boolean added = settings.pump().addToWatchlist(normalized.get());
         if (added) {
             refreshPumpStreamSubscriptions();
             redirectAttributes.addAttribute("watchlistAdded", "true");
