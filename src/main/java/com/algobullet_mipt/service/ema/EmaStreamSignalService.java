@@ -67,9 +67,11 @@ public class EmaStreamSignalService {
 
     public synchronized void refreshSubscriptions() {
         EmaSettings ema = settingsService.ema();
-        Set<WatchKey> desiredKeys = ema.getWatchlist().stream()
+        Set<WatchKey> desiredKeys = ema.isEnabled()
+                ? ema.getWatchlist().stream()
                 .map(WatchKey::fromWatch)
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(java.util.stream.Collectors.toSet())
+                : Set.of();
 
         List<WatchKey> toRemove = subscriptions.keySet().stream()
                 .filter(existing -> !desiredKeys.contains(existing))
@@ -80,6 +82,10 @@ public class EmaStreamSignalService {
                 runtimeService.unsubscribe(removed.listenerId());
                 log.info("EMA stream: удалена подписка {} {}", key.symbol(), key.timeframe());
             }
+        }
+
+        if (!ema.isEnabled()) {
+            return;
         }
 
         for (EmaSettings.EmaWatch watch : ema.getWatchlist()) {

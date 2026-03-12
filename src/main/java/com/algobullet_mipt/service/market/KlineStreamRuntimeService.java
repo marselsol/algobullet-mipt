@@ -129,6 +129,10 @@ public class KlineStreamRuntimeService {
                 log.warn("Ошибка отписки от потока свечей {} {}: {}", channel.symbol(), channel.timeframe(), ex.getMessage());
             }
         }
+
+        if (shouldUnsubscribe) {
+            channels.remove(channel, state);
+        }
     }
 
     public void publish(String symbol, String timeframe, KlineCandle candle, boolean closed) {
