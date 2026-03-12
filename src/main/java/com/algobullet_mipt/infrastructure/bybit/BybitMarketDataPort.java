@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentMap;
 )
 @Slf4j
 public class BybitMarketDataPort implements MarketDataPort {
+    private static final long REST_THROTTLE_MS = 50L;
 
     private static final Set<String> STABLE_COINS = Set.of(
             "USDT", "USDC", "BUSD", "TUSD", "DAI", "USDP", "USTC", "USDJ", "PAX", "GUSD",
@@ -53,6 +54,7 @@ public class BybitMarketDataPort implements MarketDataPort {
     private final ConcurrentMap<Integer, CacheEntry<List<String>>> topSymbolsCache = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, CacheEntry<List<KlineCandle>>> klinesCache = new ConcurrentHashMap<>();
     private volatile CacheEntry<Set<String>> tradingLinearSymbolsCache;
+    private final Object restThrottleLock = new Object();
 
     @Autowired
     public BybitMarketDataPort(BybitApiMarketRestClient marketRestClient) {
@@ -98,6 +100,7 @@ public class BybitMarketDataPort implements MarketDataPort {
                 .category(CategoryType.LINEAR)
                 .build();
 
+        sleepBeforeRestRequest();
         GenericResponse<TickersResult> response = BybitResponseMapper.parse(
                 marketRestClient.getMarketTickers(request),
                 TickersResult.class
@@ -139,6 +142,7 @@ public class BybitMarketDataPort implements MarketDataPort {
                 .limit(limit)
                 .build();
 
+        sleepBeforeRestRequest();
         GenericResponse<MarketKlineResult> response = BybitResponseMapper.parse(
                 marketRestClient.getMarketLinesData(request),
                 MarketKlineResult.class
@@ -211,6 +215,7 @@ public class BybitMarketDataPort implements MarketDataPort {
                 .limit(1000)
                 .build();
 
+        sleepBeforeRestRequest();
         GenericResponse<InstrumentInfoResult> response = BybitResponseMapper.parse(
                 marketRestClient.getInstrumentsInfo(request),
                 InstrumentInfoResult.class
@@ -287,6 +292,17 @@ public class BybitMarketDataPort implements MarketDataPort {
 
     private boolean isFresh(CacheEntry<?> entry) {
         return entry != null && clock.instant().isBefore(entry.expiresAt());
+    }
+
+    private void sleepBeforeRestRequest() {
+        synchronized (restThrottleLock) {
+            try {
+                Thread.sleep(REST_THROTTLE_MS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Ожидание перед REST-запросом к Bybit было прервано", ex);
+            }
+        }
     }
 
     private record CacheEntry<T>(T value, Instant expiresAt) {
