@@ -13,7 +13,7 @@ import org.springframework.web.socket.TextMessage;
 @Slf4j
 public class UserSignalPushService {
 
-    private static final int REPLAY_LIMIT = 20;
+    private static final int REPLAY_LIMIT = 10;
 
     private final UserSignalSessionRegistry sessionRegistry;
     private final SignalHistoryService signalHistoryService;

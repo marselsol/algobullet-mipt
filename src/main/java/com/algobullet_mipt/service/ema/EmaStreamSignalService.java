@@ -8,6 +8,7 @@ import com.algobullet_mipt.service.SettingsService;
 import com.algobullet_mipt.service.SignalHistoryService;
 import com.algobullet_mipt.service.UserSignalPushService;
 import com.algobullet_mipt.service.market.KlineStreamRuntimeService;
+import com.algobullet_mipt.service.market.TimeframeDurationResolver;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -153,8 +154,8 @@ public class EmaStreamSignalService {
         }
 
         if (signalToStore != null) {
-            saveSignalToHistory(state.userId, signalToStore, state.watch.getTimeframe());
             pushSignalToWebSocket(state.userId, signalToStore, state.watch.getTimeframe());
+            saveSignalToHistory(state.userId, signalToStore, state.watch.getTimeframe());
             log.info("EMA stream signal: user={} {} {} {}", state.userId, signalToStore.symbol(), signalToStore.type(), signalToStore.text());
         }
     }
@@ -181,13 +182,13 @@ public class EmaStreamSignalService {
         }
     }
 
-    private Signal buildSignalIfCrossed(WatchState state, Instant candleTime) {
+    private Signal buildSignalIfCrossed(WatchState state, Instant candleOpenTime) {
         if (state.candles.size() < state.watch.getSlow() + 2) {
             return null;
         }
 
         BarSeries series = new BaseBarSeriesBuilder().withName(state.watch.getSymbol()).build();
-        Duration barDuration = toBarDuration(state.watch.getTimeframe());
+        Duration barDuration = TimeframeDurationResolver.resolve(state.watch.getTimeframe());
 
         for (KlineCandle candle : state.candles) {
             series.barBuilder()
@@ -227,12 +228,14 @@ public class EmaStreamSignalService {
         String type = crossedUp ? "EMA_BUY" : "EMA_SELL";
         String directionText = crossedUp ? "bullish crossover" : "bearish crossover";
 
-        if (state.lastSignalTime != null && !candleTime.isAfter(state.lastSignalTime)) {
+        Instant signalTime = candleOpenTime.plus(barDuration);
+
+        if (state.lastSignalTime != null && !signalTime.isAfter(state.lastSignalTime)) {
             return null;
         }
 
         return new Signal(
-                candleTime,
+                signalTime,
                 state.watch.getSymbol(),
                 type,
                 "EMA%s/%s %s on %s".formatted(

@@ -5,10 +5,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 public record SignalMessage(
         String event,
-        Instant time,
+        String time,
         String symbol,
         String type,
         String text,
@@ -18,11 +20,13 @@ public record SignalMessage(
 ) {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
+    private static final ZoneId SOCKET_TIME_ZONE = ZoneId.of("Europe/Moscow");
+    private static final DateTimeFormatter SOCKET_TIME_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     public static SignalMessage from(Signal signal, String source, String timeframe) {
         return new SignalMessage(
                 "signal",
-                signal.time(),
+                formatTime(signal.time()),
                 signal.symbol(),
                 signal.type(),
                 signal.text(),
@@ -30,6 +34,13 @@ public record SignalMessage(
                 source,
                 timeframe
         );
+    }
+
+    private static String formatTime(Instant time) {
+        if (time == null) {
+            return null;
+        }
+        return SOCKET_TIME_FORMATTER.format(time.atZone(SOCKET_TIME_ZONE));
     }
 
     public String toJson() {

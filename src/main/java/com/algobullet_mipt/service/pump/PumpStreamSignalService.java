@@ -8,6 +8,7 @@ import com.algobullet_mipt.service.SettingsService;
 import com.algobullet_mipt.service.SignalHistoryService;
 import com.algobullet_mipt.service.UserSignalPushService;
 import com.algobullet_mipt.service.market.KlineStreamRuntimeService;
+import com.algobullet_mipt.service.market.TimeframeDurationResolver;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -158,18 +159,18 @@ public class PumpStreamSignalService {
 
         if (signal != null) {
             try {
-                signalHistoryService.savePumpWsSignal(state.key.userId(), signal, state.key.timeframe());
-            } catch (Exception ex) {
-                log.warn("Pump stream: ошибка сохранения сигнала user={} {} {}: {}",
-                        state.key.userId(), signal.symbol(), signal.type(), ex.getMessage());
-            }
-            try {
                 userSignalPushService.pushSignal(
                         state.key.userId(),
                         signal,
                         SignalHistoryService.SOURCE_PUMP_WS,
                         state.key.timeframe()
                 );
+            } catch (Exception ex) {
+                log.warn("Pump stream: ошибка сохранения сигнала user={} {} {}: {}",
+                        state.key.userId(), signal.symbol(), signal.type(), ex.getMessage());
+            }
+            try {
+                signalHistoryService.savePumpWsSignal(state.key.userId(), signal, state.key.timeframe());
             } catch (Exception ex) {
                 log.warn("Pump stream: не удалось отправить сигнал в websocket user={} {} {}: {}",
                         state.key.userId(), signal.symbol(), signal.type(), ex.getMessage());
@@ -194,7 +195,9 @@ public class PumpStreamSignalService {
             return null;
         }
 
-        Instant signalTime = latest.openTime() != null ? latest.openTime() : Instant.now();
+        Instant signalTime = latest.openTime() != null
+                ? latest.openTime().plus(TimeframeDurationResolver.resolve(state.key.timeframe()))
+                : Instant.now();
         if (state.lastSignalTime != null && !signalTime.isAfter(state.lastSignalTime)) {
             return null;
         }
