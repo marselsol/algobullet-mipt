@@ -6,6 +6,7 @@ import com.algobullet_mipt.model.EmaSettings;
 import com.algobullet_mipt.model.Signal;
 import com.algobullet_mipt.service.SettingsService;
 import com.algobullet_mipt.service.SignalHistoryService;
+import com.algobullet_mipt.service.UserSignalPushService;
 import com.algobullet_mipt.service.market.KlineStreamRuntimeService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -45,6 +46,7 @@ public class EmaStreamSignalService {
     private final SettingsService settingsService;
     private final KlineStreamRuntimeService runtimeService;
     private final ObjectProvider<SignalHistoryService> signalHistoryServiceProvider;
+    private final UserSignalPushService userSignalPushService;
 
     private final Map<WatchKey, WatchSubscription> subscriptions = new ConcurrentHashMap<>();
 
@@ -152,6 +154,7 @@ public class EmaStreamSignalService {
 
         if (signalToStore != null) {
             saveSignalToHistory(state.userId, signalToStore, state.watch.getTimeframe());
+            pushSignalToWebSocket(state.userId, signalToStore, state.watch.getTimeframe());
             log.info("EMA stream signal: user={} {} {} {}", state.userId, signalToStore.symbol(), signalToStore.type(), signalToStore.text());
         }
     }
@@ -165,6 +168,15 @@ public class EmaStreamSignalService {
             signalHistoryService.saveEmaStreamSignal(userId, signal, timeframe);
         } catch (Exception ex) {
             log.warn("EMA stream: не удалось сохранить сигнал в БД user={} {} {}: {}",
+                    userId, signal.symbol(), signal.type(), ex.getMessage());
+        }
+    }
+
+    private void pushSignalToWebSocket(Long userId, Signal signal, String timeframe) {
+        try {
+            userSignalPushService.pushSignal(userId, signal, SignalHistoryService.SOURCE_EMA_STREAM, timeframe);
+        } catch (Exception ex) {
+            log.warn("EMA stream: не удалось отправить сигнал в websocket user={} {} {}: {}",
                     userId, signal.symbol(), signal.type(), ex.getMessage());
         }
     }

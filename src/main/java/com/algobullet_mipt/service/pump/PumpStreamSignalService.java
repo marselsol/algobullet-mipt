@@ -6,6 +6,7 @@ import com.algobullet_mipt.model.PumpSettings;
 import com.algobullet_mipt.model.Signal;
 import com.algobullet_mipt.service.SettingsService;
 import com.algobullet_mipt.service.SignalHistoryService;
+import com.algobullet_mipt.service.UserSignalPushService;
 import com.algobullet_mipt.service.market.KlineStreamRuntimeService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -38,6 +39,7 @@ public class PumpStreamSignalService {
     private final SettingsService settingsService;
     private final KlineStreamRuntimeService runtimeService;
     private final SignalHistoryService signalHistoryService;
+    private final UserSignalPushService userSignalPushService;
 
     private final ConcurrentMap<SubscriptionKey, SubscriptionState> subscriptions = new ConcurrentHashMap<>();
 
@@ -159,6 +161,17 @@ public class PumpStreamSignalService {
                 signalHistoryService.savePumpWsSignal(state.key.userId(), signal, state.key.timeframe());
             } catch (Exception ex) {
                 log.warn("Pump stream: ошибка сохранения сигнала user={} {} {}: {}",
+                        state.key.userId(), signal.symbol(), signal.type(), ex.getMessage());
+            }
+            try {
+                userSignalPushService.pushSignal(
+                        state.key.userId(),
+                        signal,
+                        SignalHistoryService.SOURCE_PUMP_WS,
+                        state.key.timeframe()
+                );
+            } catch (Exception ex) {
+                log.warn("Pump stream: не удалось отправить сигнал в websocket user={} {} {}: {}",
                         state.key.userId(), signal.symbol(), signal.type(), ex.getMessage());
             }
         }
