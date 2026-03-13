@@ -13,7 +13,10 @@ import org.springframework.web.socket.TextMessage;
 @Slf4j
 public class UserSignalPushService {
 
+    private static final int REPLAY_LIMIT = 20;
+
     private final UserSignalSessionRegistry sessionRegistry;
+    private final SignalHistoryService signalHistoryService;
 
     public void pushSignal(Long userId, Signal signal, String source, String timeframe) {
         if (userId == null || signal == null) {
@@ -26,6 +29,16 @@ public class UserSignalPushService {
         } catch (Exception ex) {
             log.warn("Не удалось отправить сигнал в клиентский websocket user={} {} {}: {}",
                     userId, signal.symbol(), signal.type(), ex.getMessage());
+        }
+    }
+
+    public void replayRecentSignals(Long userId) {
+        if (userId == null) {
+            return;
+        }
+
+        for (SignalHistoryService.StoredSignal storedSignal : signalHistoryService.getRecentSignals(userId, REPLAY_LIMIT)) {
+            pushSignal(userId, storedSignal.signal(), storedSignal.source(), storedSignal.timeframe());
         }
     }
 }

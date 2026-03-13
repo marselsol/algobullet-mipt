@@ -39,6 +39,17 @@ public class SignalHistoryService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<StoredSignal> getRecentSignals(Long userId, int limit) {
+        if (userId == null || limit <= 0) {
+            return List.of();
+        }
+
+        return repository.findByUserIdOrderBySignalTimeDescIdDesc(userId, PageRequest.of(0, limit)).stream()
+                .map(this::toStoredSignal)
+                .toList();
+    }
+
     @Transactional
     public void saveEmaStreamSignal(Signal signal, String timeframe) {
         userAccountService.getCurrentUser()
@@ -122,6 +133,20 @@ public class SignalHistoryService {
         );
     }
 
+    private StoredSignal toStoredSignal(SignalHistoryEntry entry) {
+        return new StoredSignal(
+                new Signal(
+                        entry.getSignalTime(),
+                        entry.getSymbol(),
+                        entry.getType(),
+                        entry.getText(),
+                        entry.getStrength()
+                ),
+                entry.getSource(),
+                entry.getTimeframe()
+        );
+    }
+
     private String normalizeNullable(String value) {
         if (value == null || value.isBlank()) {
             return null;
@@ -134,5 +159,8 @@ public class SignalHistoryService {
             return "";
         }
         return value.length() <= maxLen ? value : value.substring(0, maxLen);
+    }
+
+    public record StoredSignal(Signal signal, String source, String timeframe) {
     }
 }

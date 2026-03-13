@@ -2,6 +2,7 @@ package com.algobullet_mipt.websocket;
 
 import com.algobullet_mipt.entity.UserAccount;
 import com.algobullet_mipt.repository.UserRepository;
+import com.algobullet_mipt.service.UserSignalPushService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ public class SignalWebSocketHandler extends TextWebSocketHandler {
 
     private final UserRepository userRepository;
     private final UserSignalSessionRegistry sessionRegistry;
+    private final UserSignalPushService userSignalPushService;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -31,6 +33,7 @@ public class SignalWebSocketHandler extends TextWebSocketHandler {
         session.sendMessage(new TextMessage("""
                 {"event":"connected","message":"WebSocket соединение установлено"}
                 """.trim()));
+        userSignalPushService.replayRecentSignals(userId);
     }
 
     @Override
