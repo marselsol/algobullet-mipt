@@ -21,8 +21,7 @@ import java.util.Set;
 )
 public class MockMarketDataPort implements MarketDataPort {
 
-    private static final Set<String> DEFAULT_SYMBOL_SET;
-    private static final List<String> DEFAULT_SYMBOLS = List.of(
+    private static final Set<String> SUPPORTED_SYMBOLS = Set.of(
             "BTCUSDT",
             "ETHUSDT",
             "SOLUSDT",
@@ -39,18 +38,6 @@ public class MockMarketDataPort implements MarketDataPort {
             "ATOMUSDT",
             "NEARUSDT"
     );
-
-    static {
-        DEFAULT_SYMBOL_SET = Set.copyOf(DEFAULT_SYMBOLS);
-    }
-
-    @Override
-    public List<String> getTopUsdtSymbols(int limit) {
-        if (limit <= 0) {
-            return List.of();
-        }
-        return DEFAULT_SYMBOLS.stream().limit(limit).toList();
-    }
 
     @Override
     public List<KlineCandle> getRecentKlines(String symbol, String timeframe, int limit) {
@@ -85,11 +72,11 @@ public class MockMarketDataPort implements MarketDataPort {
         }
 
         String candidate = normalized.get();
-        if (DEFAULT_SYMBOL_SET.contains(candidate)) {
+        if (SUPPORTED_SYMBOLS.contains(candidate)) {
             return Optional.of(candidate);
         }
 
         String withUsdt = candidate.endsWith("USDT") ? candidate : candidate + "USDT";
-        return DEFAULT_SYMBOL_SET.contains(withUsdt) ? Optional.of(withUsdt) : Optional.empty();
+        return SUPPORTED_SYMBOLS.contains(withUsdt) ? Optional.of(withUsdt) : Optional.empty();
     }
 }

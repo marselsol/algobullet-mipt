@@ -59,11 +59,6 @@ class FeatureFlagAdapterSelectionTest {
         MarketDataPort marketDataPort() {
             return new MarketDataPort() {
                 @Override
-                public List<String> getTopUsdtSymbols(int limit) {
-                    return List.of("BTCUSDT");
-                }
-
-                @Override
                 public List<KlineCandle> getRecentKlines(String symbol, String timeframe, int limit) {
                     return List.of();
                 }

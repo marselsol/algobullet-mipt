@@ -7,8 +7,6 @@ import java.util.Locale;
 import java.util.Optional;
 
 public interface MarketDataPort {
-    List<String> getTopUsdtSymbols(int limit);
-
     List<KlineCandle> getRecentKlines(String symbol, String timeframe, int limit);
 
     default Optional<String> normalizeLinearSymbol(String symbol) {

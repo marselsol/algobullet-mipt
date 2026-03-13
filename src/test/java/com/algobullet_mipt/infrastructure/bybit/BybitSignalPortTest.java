@@ -33,9 +33,7 @@ class BybitSignalPortTest {
         when(marketDataPort.getRecentKlines(anyString(), anyString(), anyInt())).thenReturn(candles);
 
         EmaSettings ema = new EmaSettings();
-        ema.removeFromWatchlist("BTCUSDT");
-        ema.removeFromWatchlist("ETHUSDT");
-        ema.removeFromWatchlist("SOLUSDT");
+        ema.clearWatchlist();
         ema.addToWatchlist("BTCUSDT", 3, 5, "1m");
 
         PumpSettings pump = new PumpSettings();
@@ -69,9 +67,7 @@ class BybitSignalPortTest {
         BybitSignalPort signalPort = new BybitSignalPort(marketDataPort);
 
         EmaSettings ema = new EmaSettings();
-        ema.removeFromWatchlist("BTCUSDT");
-        ema.removeFromWatchlist("ETHUSDT");
-        ema.removeFromWatchlist("SOLUSDT");
+        ema.clearWatchlist();
         ema.addToWatchlist("FAKEUSDT", 9, 21, "15m");
 
         PumpSettings pump = new PumpSettings();

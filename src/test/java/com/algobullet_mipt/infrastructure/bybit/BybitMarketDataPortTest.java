@@ -6,15 +6,9 @@ import com.bybit.api.client.domain.market.response.instrumentInfo.InstrumentEntr
 import com.bybit.api.client.domain.market.response.instrumentInfo.InstrumentInfoResult;
 import com.bybit.api.client.domain.market.response.kline.MarketKlineEntry;
 import com.bybit.api.client.domain.market.response.kline.MarketKlineResult;
-import com.bybit.api.client.domain.market.response.tickers.TickerEntry;
-import com.bybit.api.client.domain.market.response.tickers.TickersResult;
 import com.bybit.api.client.restApi.BybitApiMarketRestClient;
 import org.junit.jupiter.api.Test;
 
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,37 +20,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class BybitMarketDataPortTest {
-
-    @Test
-    void returnsTopUsdtSymbolsSortedByTurnover() {
-        BybitApiMarketRestClient client = mock(BybitApiMarketRestClient.class);
-        BybitMarketDataPort port = new BybitMarketDataPort(client);
-
-        TickerEntry btc = mock(TickerEntry.class);
-        when(btc.getSymbol()).thenReturn("BTCUSDT");
-        when(btc.getTurnover24h()).thenReturn("1000");
-
-        TickerEntry eth = mock(TickerEntry.class);
-        when(eth.getSymbol()).thenReturn("ETHUSDT");
-        when(eth.getTurnover24h()).thenReturn("800");
-
-        TickerEntry usdc = mock(TickerEntry.class);
-        when(usdc.getSymbol()).thenReturn("USDCUSDT");
-        when(usdc.getTurnover24h()).thenReturn("1200");
-
-        TickersResult tickersResult = new TickersResult();
-        tickersResult.setTickerEntries(List.of(eth, usdc, btc));
-
-        GenericResponse<TickersResult> response = new GenericResponse<>();
-        response.setRetCode(0);
-        response.setResult(tickersResult);
-
-        when(client.getMarketTickers(any())).thenReturn(response);
-
-        List<String> symbols = port.getTopUsdtSymbols(2);
-
-        assertThat(symbols).containsExactly("BTCUSDT", "ETHUSDT");
-    }
 
     @Test
     void mapsAndSortsKlinesByOpenTimeAscending() {
@@ -96,70 +59,6 @@ class BybitMarketDataPortTest {
         assertThat(candles.get(0).openTime().toEpochMilli()).isEqualTo(1000L);
         assertThat(candles.get(1).openTime().toEpochMilli()).isEqualTo(2000L);
         assertThat(candles.get(0).close().toPlainString()).isEqualTo("9.5");
-    }
-
-    @Test
-    void cachesTopSymbolsWithinTtl() {
-        BybitApiMarketRestClient client = mock(BybitApiMarketRestClient.class);
-        MutableClock clock = new MutableClock(Instant.parse("2026-02-17T12:00:00Z"));
-        BybitMarketDataPort port = new BybitMarketDataPort(client, clock, Duration.ofSeconds(30), Duration.ofSeconds(15));
-
-        TickerEntry btc = mock(TickerEntry.class);
-        when(btc.getSymbol()).thenReturn("BTCUSDT");
-        when(btc.getTurnover24h()).thenReturn("1000");
-
-        TickersResult tickersResult = new TickersResult();
-        tickersResult.setTickerEntries(List.of(btc));
-
-        GenericResponse<TickersResult> response = new GenericResponse<>();
-        response.setRetCode(0);
-        response.setResult(tickersResult);
-
-        when(client.getMarketTickers(any())).thenReturn(response);
-
-        List<String> first = port.getTopUsdtSymbols(1);
-        List<String> second = port.getTopUsdtSymbols(1);
-
-        assertThat(first).containsExactly("BTCUSDT");
-        assertThat(second).containsExactly("BTCUSDT");
-        verify(client, times(1)).getMarketTickers(any());
-    }
-
-    @Test
-    void refreshesTopSymbolsAfterTtl() {
-        BybitApiMarketRestClient client = mock(BybitApiMarketRestClient.class);
-        MutableClock clock = new MutableClock(Instant.parse("2026-02-17T12:00:00Z"));
-        BybitMarketDataPort port = new BybitMarketDataPort(client, clock, Duration.ofSeconds(10), Duration.ofSeconds(15));
-
-        TickerEntry btc = mock(TickerEntry.class);
-        when(btc.getSymbol()).thenReturn("BTCUSDT");
-        when(btc.getTurnover24h()).thenReturn("1000");
-
-        TickerEntry eth = mock(TickerEntry.class);
-        when(eth.getSymbol()).thenReturn("ETHUSDT");
-        when(eth.getTurnover24h()).thenReturn("900");
-
-        TickersResult firstResult = new TickersResult();
-        firstResult.setTickerEntries(List.of(btc));
-        GenericResponse<TickersResult> firstResponse = new GenericResponse<>();
-        firstResponse.setRetCode(0);
-        firstResponse.setResult(firstResult);
-
-        TickersResult secondResult = new TickersResult();
-        secondResult.setTickerEntries(List.of(eth));
-        GenericResponse<TickersResult> secondResponse = new GenericResponse<>();
-        secondResponse.setRetCode(0);
-        secondResponse.setResult(secondResult);
-
-        when(client.getMarketTickers(any())).thenReturn(firstResponse, secondResponse);
-
-        List<String> first = port.getTopUsdtSymbols(1);
-        clock.advanceSeconds(11);
-        List<String> second = port.getTopUsdtSymbols(1);
-
-        assertThat(first).containsExactly("BTCUSDT");
-        assertThat(second).containsExactly("ETHUSDT");
-        verify(client, times(2)).getMarketTickers(any());
     }
 
     @Test
@@ -203,32 +102,5 @@ class BybitMarketDataPortTest {
 
         assertThat(normalized).isEmpty();
         verify(client, times(1)).getInstrumentsInfo(any());
-    }
-
-    private static final class MutableClock extends Clock {
-        private Instant current;
-
-        private MutableClock(Instant current) {
-            this.current = current;
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneId.of("UTC");
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return current;
-        }
-
-        void advanceSeconds(long seconds) {
-            current = current.plusSeconds(seconds);
-        }
     }
 }
