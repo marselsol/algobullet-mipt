@@ -9,3 +9,5 @@
       file: db/changelog/003-add-bybit-api-credentials-to-users.yaml
   - include:
       file: db/changelog/007-create-normalized-user-strategy-settings.yaml
+  - include:
+      file: db/changelog/008-create-bybit-latency-measurement.yaml

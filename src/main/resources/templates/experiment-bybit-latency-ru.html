@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::body})}">
+<body>
+<section class="panel">
+    <div class="row-between">
+        <div>
+            <h2 style="margin-bottom:8px">Эксперимент сравнения задержек Bybit</h2>
+            <div class="hint">
+                Идентификатор запуска: <strong th:text="${results.selectedRunId}">run-id</strong>
+            </div>
+            <div class="hint">
+                Режим: <span th:text="${results.modeLabel()}">Одновременное сравнение REST и WebSocket</span>,
+                таймфрейм: <span th:text="${results.timeframe}">1m</span>,
+                интервал REST-опроса: <span th:text="${results.pollingDelayMs}">500</span> мс
+            </div>
+            <div class="hint">
+                Наблюдаемые пары: <span th:text="${#strings.listJoin(results.symbols, ', ')}">BTCUSDT, ETHUSDT</span>
+            </div>
+        </div>
+        <form method="get" th:action="@{/experiments/bybit-latency}" class="latency-filter">
+            <label for="runId"><strong>Запуск</strong></label>
+            <select id="runId" name="runId">
+                <option th:each="run : ${results.availableRunIds}"
+                        th:value="${run}"
+                        th:text="${run}"
+                        th:selected="${run == results.selectedRunId}">
+                    run-id
+                </option>
+            </select>
+            <button type="submit" class="btn btn-secondary">Показать</button>
+        </form>
+    </div>
+</section>
+
+<section class="panel">
+    <h3>Сводка по источникам данных</h3>
+    <div class="metric-grid" th:if="${!results.summaries.isEmpty()}">
+        <div class="metric-card" th:each="summary : ${results.summaries}">
+            <div class="metric-card__head">
+                <span class="metric-card__title" th:text="${summary.transportLabel()}">WebSocket</span>
+                <span class="badge" th:text="${summary.signals + ' записей'}">10 записей</span>
+            </div>
+            <div class="hint">Средняя/минимальная/максимальная задержка обнаружения:
+                <strong th:text="${summary.avgDetectionMs + ' / ' + summary.minDetectionMs + ' / ' + summary.maxDetectionMs + ' мс'}">0 / 0 / 0 мс</strong>
+            </div>
+            <div class="hint">Средняя/минимальная/максимальная задержка записи:
+                <strong th:text="${summary.avgEmissionMs + ' / ' + summary.minEmissionMs + ' / ' + summary.maxEmissionMs + ' мс'}">0 / 0 / 0 мс</strong>
+            </div>
+            <div class="hint">Последнее обнаружение:
+                <strong th:text="${summary.lastDetectedAt != null ? #temporals.format(summary.lastDetectedAt, 'dd.MM HH:mm:ss:SSS') : '-'}">-</strong>
+            </div>
+        </div>
+    </div>
+    <div class="empty-state" th:if="${results.summaries.isEmpty()}">
+        Для выбранного запуска пока нет измерений.
+    </div>
+</section>
+
+<section class="panel">
+    <div class="row-between">
+        <h3>Последние измерения</h3>
+        <a class="btn btn-secondary" th:href="@{/api/experiments/bybit-latency(runId=${results.selectedRunId})}">JSON-данные</a>
+    </div>
+    <div class="latency-table-wrap" th:if="${!results.measurements.isEmpty()}">
+        <table class="table table--latency">
+            <thead>
+            <tr>
+                <th>Время записи</th>
+                <th>Источник</th>
+                <th>Пара</th>
+                <th>Таймфрейм</th>
+                <th>Тип наблюдения</th>
+                <th>Время закрытия свечи</th>
+                <th>Время обнаружения</th>
+                <th>Задержка обнаружения, мс</th>
+                <th>Задержка записи, мс</th>
+                <th>Пояснение</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="m : ${results.measurements}">
+                <td th:text="${#temporals.format(m.createdAt, 'dd.MM HH:mm:ss:SSS')}">14.03 12:00:00:000</td>
+                <td><span class="badge" th:text="${m.transportLabel()}">WebSocket</span></td>
+                <td th:text="${m.symbol}">BTCUSDT</td>
+                <td th:text="${m.timeframe}">1m</td>
+                <td th:text="${m.signalType}">ЗАКРЫТИЕ_СВЕЧИ</td>
+                <td th:text="${#temporals.format(m.signalTime, 'HH:mm:ss:SSS')}">12:00:00:000</td>
+                <td th:text="${#temporals.format(m.detectedAt, 'HH:mm:ss:SSS')}">12:00:00:188</td>
+                <td th:text="${m.detectionLatencyMs}">1000</td>
+                <td th:text="${m.emissionLatencyMs}">1002</td>
+                <td th:text="${m.explanation}">Время закрытия свечи - 14.03 12:00:00:000. Время обнаружения свечи - 14.03 12:00:00:188. Время от закрытия до обнаружения - 188 мс. Это 200% от среднего времени обнаружения через REST (94 мс).</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="empty-state" th:if="${results.measurements.isEmpty()}">
+        Нет записей для отображения.
+    </div>
+</section>
+</body>
+</html>

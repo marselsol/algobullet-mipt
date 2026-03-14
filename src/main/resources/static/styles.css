@@ -461,3 +461,92 @@ input[type="tel"]:focus {
     gap: 16px;
     margin-top: 12px;
 }
+
+.latency-filter {
+    display: flex;
+    align-items: end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.latency-filter select {
+    min-width: 280px;
+    padding: 10px 12px;
+    border: 1px solid #dcdfe6;
+    border-radius: 10px;
+    background-color: #fbfcff;
+}
+
+.table--latency th:nth-child(4),
+.table--latency td:nth-child(4),
+.table--latency th:nth-child(5),
+.table--latency td:nth-child(5),
+.table--latency th:nth-child(9),
+.table--latency td:nth-child(9) {
+    display: none;
+}
+
+.table--latency td:last-child {
+    max-width: 520px;
+}
+
+.metric-card .hint:nth-of-type(2) {
+    display: none;
+}
+
+.latency-table-wrap {
+    overflow-x: auto;
+}
+
+.table--latency {
+    min-width: 1280px;
+    table-layout: fixed;
+}
+
+.table--latency th {
+    text-align: center;
+    vertical-align: middle;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.3;
+    padding: 12px 10px;
+    border-right: 1px solid #eceef2;
+}
+
+.table--latency td {
+    padding: 12px 10px;
+    vertical-align: top;
+    border-right: 1px solid #f3f4f6;
+}
+
+.table--latency th:last-child,
+.table--latency td:last-child {
+    border-right: none;
+}
+
+.table--latency th:nth-child(1),
+.table--latency td:nth-child(1) {
+    width: 130px;
+}
+
+.table--latency th:nth-child(2),
+.table--latency td:nth-child(2) {
+    width: 100px;
+}
+
+.table--latency th:nth-child(3),
+.table--latency td:nth-child(3) {
+    width: 110px;
+}
+
+.table--latency th:nth-child(6),
+.table--latency td:nth-child(6),
+.table--latency th:nth-child(7),
+.table--latency td:nth-child(7) {
+    width: 130px;
+}
+
+.table--latency th:nth-child(8),
+.table--latency td:nth-child(8) {
+    width: 110px;
+}

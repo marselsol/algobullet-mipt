@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::body})}">
+<body>
+<section class="panel">
+    <div class="row-between">
+        <div>
+            <h2 style="margin-bottom:8px">Bybit Latency Experiment</h2>
+            <div class="hint">
+                Run: <strong th:text="${results.selectedRunId}">run-id</strong>
+            </div>
+            <div class="hint">
+                Mode: <span th:text="${results.mode}">DUAL</span>,
+                TF: <span th:text="${results.timeframe}">1m</span>,
+                Polling: <span th:text="${results.pollingDelayMs}">500</span> ms
+            </div>
+            <div class="hint">
+                Symbols: <span th:text="${#strings.listJoin(results.symbols, ', ')}">BTCUSDT, ETHUSDT</span>
+            </div>
+        </div>
+        <form method="get" th:action="@{/experiments/bybit-latency}" class="latency-filter">
+            <label for="runId"><strong>Run</strong></label>
+            <select id="runId" name="runId">
+                <option th:each="run : ${results.availableRunIds}"
+                        th:value="${run}"
+                        th:text="${run}"
+                        th:selected="${run == results.selectedRunId}">
+                    run-id
+                </option>
+            </select>
+            <button type="submit" class="btn btn-secondary">Показать</button>
+        </form>
+    </div>
+</section>
+
+<section class="panel">
+    <h3>Сводка по transport</h3>
+    <div class="metric-grid" th:if="${!results.summaries.isEmpty()}">
+        <div class="metric-card" th:each="summary : ${results.summaries}">
+            <div class="metric-card__head">
+                <span class="metric-card__title" th:text="${summary.transport}">WS</span>
+                <span class="badge" th:text="${summary.signals + ' signals'}">10 signals</span>
+            </div>
+            <div class="hint">Detection avg/min/max: <strong th:text="${summary.avgDetectionMs + ' / ' + summary.minDetectionMs + ' / ' + summary.maxDetectionMs + ' ms'}">0 / 0 / 0 ms</strong></div>
+            <div class="hint">Emission avg/min/max: <strong th:text="${summary.avgEmissionMs + ' / ' + summary.minEmissionMs + ' / ' + summary.maxEmissionMs + ' ms'}">0 / 0 / 0 ms</strong></div>
+            <div class="hint">Last detected: <strong th:text="${summary.lastDetectedAt != null ? #temporals.format(summary.lastDetectedAt, 'dd.MM HH:mm:ss') : '-'}">-</strong></div>
+        </div>
+    </div>
+    <div class="empty-state" th:if="${results.summaries.isEmpty()}">
+        Для выбранного run пока нет измерений.
+    </div>
+</section>
+
+<section class="panel">
+    <div class="row-between">
+        <h3>Последние измерения</h3>
+        <a class="btn btn-secondary" th:href="@{/api/experiments/bybit-latency(runId=${results.selectedRunId})}">JSON</a>
+    </div>
+    <div th:if="${!results.measurements.isEmpty()}">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Created</th>
+                <th>Transport</th>
+                <th>Symbol</th>
+                <th>TF</th>
+                <th>Type</th>
+                <th>Signal Time</th>
+                <th>Detected</th>
+                <th>Detection ms</th>
+                <th>Emission ms</th>
+                <th>Details</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="m : ${results.measurements}">
+                <td th:text="${#temporals.format(m.createdAt, 'dd.MM HH:mm:ss')}">14.03 12:00:00</td>
+                <td><span class="badge" th:text="${m.transport}">WS</span></td>
+                <td th:text="${m.symbol}">BTCUSDT</td>
+                <td th:text="${m.timeframe}">1m</td>
+                <td th:text="${m.signalType}">PUMP</td>
+                <td th:text="${#temporals.format(m.signalTime, 'dd.MM HH:mm:ss')}">14.03 12:00:00</td>
+                <td th:text="${#temporals.format(m.detectedAt, 'dd.MM HH:mm:ss')}">14.03 12:00:01</td>
+                <td th:text="${m.detectionLatencyMs}">1000</td>
+                <td th:text="${m.emissionLatencyMs}">1002</td>
+                <td th:text="${m.details}">changePercent=1.2</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="empty-state" th:if="${results.measurements.isEmpty()}">
+        Нет записей для отображения.
+    </div>
+</section>
+</body>
+</html>
