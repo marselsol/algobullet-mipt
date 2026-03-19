@@ -11,3 +11,5 @@
       file: db/changelog/007-create-normalized-user-strategy-settings.yaml
   - include:
       file: db/changelog/008-create-bybit-latency-measurement.yaml
+  - include:
+      file: db/changelog/009-create-app-feature-flags.yaml

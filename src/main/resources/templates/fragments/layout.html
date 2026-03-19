@@ -16,7 +16,7 @@
             <a th:href="@{/profile}">Профиль</a>
             <a th:href="@{/settings/pump}">Памп-скринер</a>
             <a th:href="@{/settings/ema}">EMA</a>
-            <a th:href="@{/experiments/bybit-latency}">Latency Exp</a>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/experiments/bybit-latency}">Latency Exp</a>
             <form th:action="@{/logout}" method="post" class="logout-form logout-form--nav">
                 <button type="submit">Выход</button>
             </form>

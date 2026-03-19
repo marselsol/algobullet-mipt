@@ -3,6 +3,7 @@ package com.algobullet_mipt.experiment.bybitlatency;
 import com.algobullet_mipt.domain.market.model.KlineCandle;
 import com.algobullet_mipt.domain.market.model.KlineStreamUpdate;
 import com.algobullet_mipt.domain.market.port.MarketDataPort;
+import com.algobullet_mipt.service.AppFeatureFlagService;
 import com.algobullet_mipt.service.market.KlineStreamRuntimeService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -29,6 +30,7 @@ public class WsLatencyExperimentService {
     private static final int MAX_CANDLES_PER_SYMBOL = 5;
 
     private final BybitLatencyExperimentProperties properties;
+    private final AppFeatureFlagService featureFlagService;
     private final KlineStreamRuntimeService runtimeService;
     private final MarketDataPort marketDataPort;
     private final ExperimentPumpSignalEvaluator evaluator;
@@ -37,12 +39,14 @@ public class WsLatencyExperimentService {
 
     public WsLatencyExperimentService(
             BybitLatencyExperimentProperties properties,
+            AppFeatureFlagService featureFlagService,
             KlineStreamRuntimeService runtimeService,
             MarketDataPort marketDataPort,
             ExperimentPumpSignalEvaluator evaluator,
             BybitLatencyMeasurementWriter writer
     ) {
         this.properties = properties;
+        this.featureFlagService = featureFlagService;
         this.runtimeService = runtimeService;
         this.marketDataPort = marketDataPort;
         this.evaluator = evaluator;
@@ -51,7 +55,17 @@ public class WsLatencyExperimentService {
 
     @PostConstruct
     public void init() {
-        if (!properties.getMode().usesWs()) {
+        refreshState();
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        clearSubscriptions();
+    }
+
+    public synchronized void refreshState() {
+        clearSubscriptions();
+        if (!properties.getMode().usesWs() || !featureFlagService.isBybitLatencyExperimentEnabled()) {
             return;
         }
 
@@ -79,8 +93,7 @@ public class WsLatencyExperimentService {
                 subscriptions.keySet(), properties.getTimeframe());
     }
 
-    @PreDestroy
-    public void shutdown() {
+    private void clearSubscriptions() {
         for (SubscriptionState state : subscriptions.values()) {
             if (state.listenerId != null) {
                 runtimeService.unsubscribe(state.listenerId);

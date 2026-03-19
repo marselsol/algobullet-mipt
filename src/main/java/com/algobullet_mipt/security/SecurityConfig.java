@@ -26,6 +26,11 @@ public class SecurityConfig {
                                 "/", "/register", "/login",
                                 "/styles.css", "/css/**", "/js/**", "/images/**", "/webjars/**"
                         ).permitAll()
+                        .requestMatchers(
+                                "/experiments/bybit-latency",
+                                "/experiments/bybit-latency/toggle",
+                                "/api/experiments/bybit-latency"
+                        ).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

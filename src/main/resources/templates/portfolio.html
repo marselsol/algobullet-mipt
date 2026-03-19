@@ -13,17 +13,25 @@
 
         <div class="panel">
             <h2>Анализ портфеля</h2>
-            <p class="hint">Метрики рассчитываются по данным Bybit (кошелек и открытые позиции).</p>
+            <p class="hint">Метрики рассчитываются по данным Bybit: кошелёк и открытые позиции.</p>
 
             <div class="metric-grid">
                 <div class="metric-card" th:each="m : ${analysis.metrics}">
                     <div class="metric-card__head">
-                        <div class="metric-card__title" th:text="${m.name}">Metric</div>
+                        <div class="metric-card__title-wrap">
+                            <div class="metric-card__title" th:text="${m.name}">Метрика</div>
+                            <span class="metric-help"
+                                  th:if="${m.recommendation != null && !#strings.isEmpty(m.recommendation)}"
+                                  tabindex="0"
+                                  aria-label="Описание метрики">
+                                ?
+                                <span class="metric-help__tooltip" th:text="${m.recommendation}">Описание</span>
+                            </span>
+                        </div>
                         <span class="badge" th:classappend="${m.passed} ? ' status-ok' : ' status-bad'"
-                              th:text="${m.passed} ? 'OK' : 'Провал'">OK</span>
+                              th:text="${m.passed} ? 'Норма' : 'Внимание'">Норма</span>
                     </div>
                     <div class="metric-card__value" th:text="${m.value}">1.25</div>
-                    <div class="hint" th:text="${m.recommendation}">Комментарий</div>
                 </div>
             </div>
         </div>
@@ -33,12 +41,12 @@
         <div class="panel">
             <h3>Что показываем</h3>
             <ul class="list">
-                <li class="row-between"><div><strong>Total Equity</strong><div class="hint">Общая стоимость аккаунта</div></div></li>
-                <li class="row-between"><div><strong>Available Balance</strong><div class="hint">Свободная маржа для новых сделок</div></div></li>
+                <li class="row-between"><div><strong>Общий капитал</strong><div class="hint">Текущая совокупная стоимость аккаунта</div></div></li>
+                <li class="row-between"><div><strong>Свободный баланс</strong><div class="hint">Средства, доступные для новых сделок</div></div></li>
                 <li class="row-between"><div><strong>Unrealized PnL</strong><div class="hint">Нереализованный результат по открытым позициям</div></div></li>
-                <li class="row-between"><div><strong>Open Positions</strong><div class="hint">Количество открытых позиций</div></div></li>
-                <li class="row-between"><div><strong>Exposure / Equity</strong><div class="hint">Оценка нагрузки позиции на капитал</div></div></li>
-                <li class="row-between"><div><strong>Largest Position</strong><div class="hint">Контроль концентрации риска</div></div></li>
+                <li class="row-between"><div><strong>Открытые позиции</strong><div class="hint">Сколько позиций сейчас удерживается</div></div></li>
+                <li class="row-between"><div><strong>Нагрузка на капитал</strong><div class="hint">Насколько объём позиций велик относительно капитала</div></div></li>
+                <li class="row-between"><div><strong>Крупнейшая позиция</strong><div class="hint">Показывает концентрацию риска в одном инструменте</div></div></li>
             </ul>
         </div>
     </aside>

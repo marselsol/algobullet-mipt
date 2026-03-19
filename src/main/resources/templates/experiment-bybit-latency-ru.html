@@ -3,7 +3,7 @@
       th:replace="~{fragments/layout :: layout(~{::body})}">
 <body>
 <section class="panel">
-    <div class="row-between">
+    <div class="row-between" style="gap: 16px; flex-wrap: wrap; align-items: flex-start;">
         <div>
             <h2 style="margin-bottom:8px">Эксперимент сравнения задержек Bybit</h2>
             <div class="hint">
@@ -15,21 +15,41 @@
                 интервал REST-опроса: <span th:text="${results.pollingDelayMs}">500</span> мс
             </div>
             <div class="hint">
-                Наблюдаемые пары: <span th:text="${#strings.listJoin(results.symbols, ', ')}">BTCUSDT, ETHUSDT</span>
+                Наблюдаемые пары: <span th:text="${#strings.listJoin(results.symbols, ', ')}">BTCUSDT</span>
             </div>
+            <div class="hint" th:if="${latencyExperimentEnabled}">
+                Статус эксперимента: <span class="badge status-ok">Включён</span>
+            </div>
+            <div class="hint" th:if="${!latencyExperimentEnabled}">
+                Статус эксперимента: <span class="badge status-bad">Выключен</span>
+            </div>
+            <div class="hint" th:if="${param.stateChanged}">Статус эксперимента обновлён.</div>
         </div>
-        <form method="get" th:action="@{/experiments/bybit-latency}" class="latency-filter">
-            <label for="runId"><strong>Запуск</strong></label>
-            <select id="runId" name="runId">
-                <option th:each="run : ${results.availableRunIds}"
-                        th:value="${run}"
-                        th:text="${run}"
-                        th:selected="${run == results.selectedRunId}">
-                    run-id
-                </option>
-            </select>
-            <button type="submit" class="btn btn-secondary">Показать</button>
-        </form>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+            <form method="post" th:action="@{/experiments/bybit-latency/toggle}" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <input type="hidden" name="enabled" th:value="${!latencyExperimentEnabled}">
+                <button type="submit"
+                        class="btn"
+                        th:classappend="${latencyExperimentEnabled} ? '' : ' btn-secondary'"
+                        th:text="${latencyExperimentEnabled} ? 'Выключить эксперимент' : 'Включить эксперимент'">
+                    Выключить эксперимент
+                </button>
+            </form>
+
+            <form method="get" th:action="@{/experiments/bybit-latency}" class="latency-filter">
+                <label for="runId"><strong>Запуск</strong></label>
+                <select id="runId" name="runId">
+                    <option th:each="run : ${results.availableRunIds}"
+                            th:value="${run}"
+                            th:text="${run}"
+                            th:selected="${run == results.selectedRunId}">
+                        run-id
+                    </option>
+                </select>
+                <button type="submit" class="btn btn-secondary">Показать</button>
+            </form>
+        </div>
     </div>
 </section>
 
@@ -41,10 +61,10 @@
                 <span class="metric-card__title" th:text="${summary.transportLabel()}">WebSocket</span>
                 <span class="badge" th:text="${summary.signals + ' записей'}">10 записей</span>
             </div>
-            <div class="hint">Средняя/минимальная/максимальная задержка обнаружения:
+            <div class="hint">Средняя / минимальная / максимальная задержка обнаружения:
                 <strong th:text="${summary.avgDetectionMs + ' / ' + summary.minDetectionMs + ' / ' + summary.maxDetectionMs + ' мс'}">0 / 0 / 0 мс</strong>
             </div>
-            <div class="hint">Средняя/минимальная/максимальная задержка записи:
+            <div class="hint">Средняя / минимальная / максимальная задержка записи:
                 <strong th:text="${summary.avgEmissionMs + ' / ' + summary.minEmissionMs + ' / ' + summary.maxEmissionMs + ' мс'}">0 / 0 / 0 мс</strong>
             </div>
             <div class="hint">Последнее обнаружение:
@@ -70,7 +90,7 @@
                 <th>Источник</th>
                 <th>Пара</th>
                 <th>Таймфрейм</th>
-                <th>Тип наблюдения</th>
+                <th>Тип сигнала</th>
                 <th>Время закрытия свечи</th>
                 <th>Время обнаружения</th>
                 <th>Задержка обнаружения, мс</th>
@@ -84,12 +104,12 @@
                 <td><span class="badge" th:text="${m.transportLabel()}">WebSocket</span></td>
                 <td th:text="${m.symbol}">BTCUSDT</td>
                 <td th:text="${m.timeframe}">1m</td>
-                <td th:text="${m.signalType}">ЗАКРЫТИЕ_СВЕЧИ</td>
+                <td th:text="${m.signalType}">CLOSE_CANDLE</td>
                 <td th:text="${#temporals.format(m.signalTime, 'HH:mm:ss:SSS')}">12:00:00:000</td>
                 <td th:text="${#temporals.format(m.detectedAt, 'HH:mm:ss:SSS')}">12:00:00:188</td>
                 <td th:text="${m.detectionLatencyMs}">1000</td>
                 <td th:text="${m.emissionLatencyMs}">1002</td>
-                <td th:text="${m.explanation}">Время закрытия свечи - 14.03 12:00:00:000. Время обнаружения свечи - 14.03 12:00:00:188. Время от закрытия до обнаружения - 188 мс. Это 200% от среднего времени обнаружения через REST (94 мс).</td>
+                <td th:text="${m.explanation}">Пояснение</td>
             </tr>
             </tbody>
         </table>

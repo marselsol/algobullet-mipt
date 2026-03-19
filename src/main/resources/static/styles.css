@@ -434,17 +434,81 @@ input[type="tel"]:focus {
 
 .metric-card__head {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 12px;
 }
 
 .metric-card__title {
     font-weight: 700;
 }
 
+.metric-card__title-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
 .metric-card__value {
     font-size: 1.4rem;
     margin: 8px 0 6px;
+}
+
+.metric-help {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1px solid #cfd6e4;
+    background-color: #f3f6fc;
+    color: #667085;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    flex: 0 0 auto;
+}
+
+.metric-help__tooltip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    width: min(240px, 70vw);
+    padding: 10px 12px;
+    border-radius: 10px;
+    background-color: #1f2937;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 400;
+    line-height: 1.45;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.16s ease, visibility 0.16s ease;
+    z-index: 5;
+}
+
+.metric-help__tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #1f2937 transparent transparent transparent;
+}
+
+.metric-help:hover .metric-help__tooltip,
+.metric-help:focus-visible .metric-help__tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 .status-ok {
@@ -488,10 +552,6 @@ input[type="tel"]:focus {
 
 .table--latency td:last-child {
     max-width: 520px;
-}
-
-.metric-card .hint:nth-of-type(2) {
-    display: none;
 }
 
 .latency-table-wrap {

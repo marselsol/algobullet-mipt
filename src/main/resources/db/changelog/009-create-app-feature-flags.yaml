@@ -1,0 +1,38 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-create-app-feature-flags
+      author: codex
+      preConditions:
+        onFail: MARK_RAN
+        onError: HALT
+        not:
+          tableExists:
+            schemaName: algo
+            tableName: app_feature_flags
+      changes:
+        - createTable:
+            schemaName: algo
+            tableName: app_feature_flags
+            columns:
+              - column:
+                  name: feature_key
+                  type: VARCHAR(64)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+        - insert:
+            schemaName: algo
+            tableName: app_feature_flags
+            columns:
+              - column:
+                  name: feature_key
+                  value: BYBIT_LATENCY_EXPERIMENT
+              - column:
+                  name: enabled
+                  valueBoolean: true

@@ -186,17 +186,17 @@ public class BybitAccountDataPort implements AccountDataPort {
         List<PortfolioMetric> metrics = new ArrayList<>();
         metrics.add(new PortfolioMetric("SOURCE", "Источник портфеля", "BYBIT API", true, "Метрики рассчитаны по wallet balance и open positions"));
         metrics.add(new PortfolioMetric("MODE", "Режим", testnet ? "TESTNET" : "MAINNET", true, "Проверьте соответствие ключей окружению"));
-        metrics.add(new PortfolioMetric("EQUITY", "Total Equity", formatUsd(totalEquity), totalEquity.signum() > 0, "Суммарная оценка аккаунта"));
-        metrics.add(new PortfolioMetric("WALLET", "Wallet Balance", formatUsd(totalWalletBalance), true, "Баланс без учета нереализованного PnL"));
-        metrics.add(new PortfolioMetric("AVAILABLE", "Available Balance", formatUsd(availableBalance), availableBalance.signum() >= 0, "Свободная маржа для новых сделок"));
-        metrics.add(new PortfolioMetric("AV_SHARE", "Available / Equity", availableSharePct + "%", availableSharePct.compareTo(BigDecimal.valueOf(20)) >= 0, "Запас ликвидности"));
+        metrics.add(new PortfolioMetric("EQUITY", "Общий капитал", formatUsd(totalEquity), totalEquity.signum() > 0, "Суммарная оценка аккаунта с учетом текущего результата"));
+        metrics.add(new PortfolioMetric("WALLET", "Баланс кошелька", formatUsd(totalWalletBalance), true, "Баланс без учета нереализованного PnL"));
+        metrics.add(new PortfolioMetric("AVAILABLE", "Свободный баланс", formatUsd(availableBalance), availableBalance.signum() >= 0, "Средства, доступные для новых сделок"));
+        metrics.add(new PortfolioMetric("AV_SHARE", "Свободные средства / капитал", availableSharePct + "%", availableSharePct.compareTo(BigDecimal.valueOf(20)) >= 0, "Доля ликвидности относительно капитала"));
         metrics.add(new PortfolioMetric("UPL", "Unrealized PnL", formatUsd(unrealizedPnl), unrealizedPnl.compareTo(BigDecimal.ZERO) >= 0, "Суммарный нереализованный результат"));
-        metrics.add(new PortfolioMetric("POS_CNT", "Open Positions", String.valueOf(openPositions), openPositions <= 12, "Контроль количества позиций"));
-        metrics.add(new PortfolioMetric("LONG_SHORT", "Long / Short", longPositions + " / " + shortPositions, true, "Баланс направлений"));
-        metrics.add(new PortfolioMetric("EXPOSURE", "Gross Exposure", formatUsd(grossExposure), exposureToEquityPct.compareTo(BigDecimal.valueOf(300)) <= 0, "Общий размер позиций"));
-        metrics.add(new PortfolioMetric("EXP_EQUITY", "Exposure / Equity", exposureToEquityPct + "%", exposureToEquityPct.compareTo(BigDecimal.valueOf(250)) <= 0, "Оценка плеча/риска"));
-        metrics.add(new PortfolioMetric("LARGEST", "Largest Position", largestPositionSymbol + " " + formatUsd(largestPositionValue), true, "Концентрация риска"));
-        metrics.add(new PortfolioMetric("UPL_WALLET", "Bybit Total Perp UPL", formatUsd(totalPerpUpl), totalPerpUpl.compareTo(BigDecimal.ZERO) >= 0, "Из wallet summary Bybit"));
+        metrics.add(new PortfolioMetric("POS_CNT", "Открытые позиции", String.valueOf(openPositions), openPositions <= 12, "Количество одновременно открытых позиций"));
+        metrics.add(new PortfolioMetric("LONG_SHORT", "Long / Short", longPositions + " / " + shortPositions, true, "Баланс позиций в лонг и шорт"));
+        metrics.add(new PortfolioMetric("EXPOSURE", "Общий объём позиций", formatUsd(grossExposure), exposureToEquityPct.compareTo(BigDecimal.valueOf(300)) <= 0, "Суммарный размер всех открытых позиций"));
+        metrics.add(new PortfolioMetric("EXP_EQUITY", "Нагрузка на капитал", exposureToEquityPct + "%", exposureToEquityPct.compareTo(BigDecimal.valueOf(250)) <= 0, "Отношение объема позиций к капиталу, косвенно отражает риск"));
+        metrics.add(new PortfolioMetric("LARGEST", "Крупнейшая позиция", largestPositionSymbol + " " + formatUsd(largestPositionValue), true, "Самая большая позиция по объему, показатель концентрации риска"));
+        metrics.add(new PortfolioMetric("UPL_WALLET", "Bybit Total Perp UPL", formatUsd(totalPerpUpl), totalPerpUpl.compareTo(BigDecimal.ZERO) >= 0, "Нереализованный PnL из wallet summary Bybit"));
         return metrics;
     }
 

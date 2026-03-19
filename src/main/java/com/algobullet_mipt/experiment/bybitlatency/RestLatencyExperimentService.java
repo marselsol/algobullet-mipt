@@ -1,6 +1,7 @@
 package com.algobullet_mipt.experiment.bybitlatency;
 
 import com.algobullet_mipt.domain.market.model.KlineCandle;
+import com.algobullet_mipt.service.AppFeatureFlagService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 public class RestLatencyExperimentService {
 
     private final BybitLatencyExperimentProperties properties;
+    private final AppFeatureFlagService featureFlagService;
     private final BybitExperimentRestMarketDataClient restMarketDataClient;
     private final ExperimentPumpSignalEvaluator evaluator;
     private final BybitLatencyMeasurementWriter writer;
@@ -28,11 +30,13 @@ public class RestLatencyExperimentService {
 
     public RestLatencyExperimentService(
             BybitLatencyExperimentProperties properties,
+            AppFeatureFlagService featureFlagService,
             BybitExperimentRestMarketDataClient restMarketDataClient,
             ExperimentPumpSignalEvaluator evaluator,
             BybitLatencyMeasurementWriter writer
     ) {
         this.properties = properties;
+        this.featureFlagService = featureFlagService;
         this.restMarketDataClient = restMarketDataClient;
         this.evaluator = evaluator;
         this.writer = writer;
@@ -49,7 +53,7 @@ public class RestLatencyExperimentService {
 
     @Scheduled(fixedDelayString = "${app.experiment.bybit-latency.polling-delay-ms:500}")
     public void poll() {
-        if (!properties.getMode().usesRest()) {
+        if (!properties.getMode().usesRest() || !featureFlagService.isBybitLatencyExperimentEnabled()) {
             return;
         }
 

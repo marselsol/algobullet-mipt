@@ -26,52 +26,52 @@ public class MockAccountDataPort implements AccountDataPort {
         List<PortfolioMetric> metrics = List.of(
                 new PortfolioMetric(
                         "SHARPE",
-                        "Sharpe Ratio",
+                        "Коэффициент Sharpe",
                         "1.25",
                         true,
-                        "Sharpe > 1 means acceptable risk/reward"
+                        "Sharpe > 1 обычно означает приемлемое соотношение риска и доходности"
                 ),
                 new PortfolioMetric(
                         "MDD",
-                        "Max Drawdown",
+                        "Максимальная просадка",
                         "-18%",
                         true,
-                        "Drawdown below 20% is acceptable for moderate risk"
+                        "Просадка ниже 20% обычно считается приемлемой для умеренного риска"
                 ),
                 new PortfolioMetric(
                         "CORR",
-                        "Average Asset Correlation",
+                        "Средняя корреляция активов",
                         "0.42",
                         false,
-                        "Correlation is high, add less-correlated assets"
+                        "Корреляция повышенная, стоит добавить менее зависимые активы"
                 ),
                 new PortfolioMetric(
                         "MPT",
-                        "Markowitz Model (MPT)",
-                        "Target risk/quality split: 70/30",
+                        "Модель Markowitz (MPT)",
+                        "Целевое распределение риск/качество: 70/30",
                         true,
-                        "Rebalancing to 70/30 can reduce portfolio volatility"
+                        "Ребалансировка к 70/30 может снизить волатильность портфеля"
                 ),
                 new PortfolioMetric(
                         "VaR",
                         "Value at Risk (95%)",
                         "-6.4%",
                         false,
-                        "Reduce leverage/risk, VaR is above comfort level"
+                        "Стоит снизить плечо или общий риск, VaR выше комфортного уровня"
                 ),
                 new PortfolioMetric(
                         "STABLE",
-                        "Stablecoin Share",
+                        "Доля стейблкоинов",
                         "12%",
                         true,
-                        "Liquidity buffer is enough for buying drawdowns"
+                        "Буфера ликвидности достаточно для добора на просадках"
                 ),
                 new PortfolioMetric(
                         "TREYNOR",
-                        "Return per Unit of Market Risk",
+                        "Доходность на единицу рыночного риска",
                         "0.09",
                         false,
-                        "Optimize beta-risk or improve alpha"
+                        "Нужно улучшить alpha или сократить beta-риск"
                 )
         );
 
