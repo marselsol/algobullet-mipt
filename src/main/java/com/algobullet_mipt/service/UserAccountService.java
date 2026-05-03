@@ -1,5 +1,6 @@
 package com.algobullet_mipt.service;
 
+import com.algobullet_mipt.entity.SubscriptionPlan;
 import com.algobullet_mipt.entity.UserAccount;
 import com.algobullet_mipt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class UserAccountService {
         account.setEmail(normalizedEmail);
         account.setPhone(normalizedPhone);
         account.setPassword(passwordEncoder.encode(rawPassword));
+        account.setSubscriptionPlan(SubscriptionPlan.FREE);
         return userRepository.save(account);
     }
 
@@ -75,12 +77,10 @@ public class UserAccountService {
             user.setBybitApiKey(normalizedKey);
         }
 
-        // Пустой секрет в форме означает "не менять".
         if (normalizedSecret != null) {
             user.setBybitApiSecret(normalizedSecret);
         }
 
-        // Если ключ очистили, секрет тоже очищаем, чтобы не держать полумертвую пару.
         if (user.getBybitApiKey() == null || user.getBybitApiKey().isBlank()) {
             user.setBybitApiKey(null);
             user.setBybitApiSecret(null);

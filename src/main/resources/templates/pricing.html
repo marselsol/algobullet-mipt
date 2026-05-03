@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::body})}">
+<body>
+<section class="page-hero panel">
+    <h1>Тарифы ALGOBULLET</h1>
+    <p class="page-lead">Выберите формат доступа, который подходит под ваш сценарий работы: от базового знакомства с платформой до расширенного доступа к API и аналитике.</p>
+</section>
+
+<section class="pricing-grid">
+    <article class="panel pricing-card">
+        <div>
+            <div class="pricing-card__eyebrow">Бесплатно</div>
+            <h2 class="pricing-card__title">Free</h2>
+        </div>
+        <div class="pricing-card__price">0 ₽</div>
+        <p class="pricing-card__description">Стартовый доступ к платформе и основным разделам сервиса.</p>
+        <ul class="pricing-card__features">
+            <li>Доступ к личному кабинету</li>
+            <li>Просмотр сигналов и аналитики</li>
+            <li>Подходит для первого знакомства с сервисом</li>
+        </ul>
+        <div class="pricing-card__actions">
+            <a class="btn btn-secondary"
+               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='FREE')} : @{/register}">Подключить тариф</a>
+        </div>
+    </article>
+
+    <article class="panel pricing-card">
+        <div>
+            <div class="pricing-card__eyebrow">B2C</div>
+            <h2 class="pricing-card__title">Basic</h2>
+        </div>
+        <div class="pricing-card__price">1 490 ₽</div>
+        <p class="pricing-card__description">20+ пар, сигналы и базовая аналитика.</p>
+        <ul class="pricing-card__features">
+            <li>Доступ к основным торговым парам</li>
+            <li>Сигналы в интерфейсе сервиса</li>
+            <li>Базовый аналитический набор</li>
+        </ul>
+        <div class="pricing-card__actions">
+            <a class="btn btn-primary"
+               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2C_BASIC')} : @{/register}">Подключить тариф</a>
+        </div>
+    </article>
+
+    <article class="panel pricing-card pricing-card--featured">
+        <div>
+            <div class="pricing-card__eyebrow">B2C</div>
+            <h2 class="pricing-card__title">Pro</h2>
+        </div>
+        <div class="pricing-card__price">2 990 ₽</div>
+        <p class="pricing-card__description">100+ пар, памп-скринер и доступ к API.</p>
+        <ul class="pricing-card__features">
+            <li>Расширенный набор торговых пар</li>
+            <li>Доступ к памп-скринеру</li>
+            <li>Интеграция через API</li>
+        </ul>
+        <div class="pricing-card__actions">
+            <a class="btn btn-primary"
+               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2C_PRO')} : @{/register}">Подключить тариф</a>
+        </div>
+    </article>
+
+    <article class="panel pricing-card">
+        <div>
+            <div class="pricing-card__eyebrow">B2B</div>
+            <h2 class="pricing-card__title">API</h2>
+        </div>
+        <div class="pricing-card__price">от 50k <span class="pricing-card__price-note">в месяц</span></div>
+        <p class="pricing-card__description">Индивидуальные условия для компаний с повышенной нагрузкой и интеграционными задачами.</p>
+        <ul class="pricing-card__features">
+            <li>Корпоративный формат подключения</li>
+            <li>Персональные условия и объемы</li>
+            <li>Индивидуальный сценарий интеграции</li>
+        </ul>
+        <div class="pricing-card__actions">
+            <a class="btn btn-secondary"
+               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2B_API')} : @{/register}">Подключить тариф</a>
+        </div>
+    </article>
+</section>
+</body>
+</html>

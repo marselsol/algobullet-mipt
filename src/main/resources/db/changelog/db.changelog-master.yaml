@@ -13,3 +13,5 @@
       file: db/changelog/008-create-bybit-latency-measurement.yaml
   - include:
       file: db/changelog/009-create-app-feature-flags.yaml
+  - include:
+      file: db/changelog/010-add-subscription-plan-to-users.yaml

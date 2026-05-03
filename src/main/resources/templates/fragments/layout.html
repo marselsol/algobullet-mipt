@@ -9,8 +9,9 @@
 </head>
 <body>
 <header>
-    <a class="brand" th:href="${#authorization.expression('isAuthenticated()')} ? @{/dashboard} : @{/login}">ALGO<span class="bullet">BULLET</span></a>
+    <a class="brand" th:href="${#authorization.expression('isAuthenticated()')} ? @{/dashboard} : @{/}">ALGO<span class="bullet">BULLET</span></a>
     <nav>
+        <a th:href="@{/pricing}">Тарифы</a>
         <th:block sec:authorize="isAuthenticated()">
             <a th:href="@{/portfolio}">Анализ портфеля</a>
             <a th:href="@{/profile}">Профиль</a>
@@ -32,6 +33,22 @@
     <div th:insert="${content}"></div>
 </main>
 
-<footer class="footer">© 2025 ALGOBULLET</footer>
+<footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__brand">
+            <strong>ALGOBULLET</strong>
+            <span>Сервис торговых сигналов и аналитики для крипторынка</span>
+        </div>
+        <div class="footer__links">
+            <a th:href="@{/pricing}">Тарифы</a>
+            <a th:href="@{/contacts}">Контакты и реквизиты</a>
+            <a th:href="@{/legal}">Пользовательское соглашение</a>
+        </div>
+        <div class="footer__meta">
+            <span>ИНН: 182910499540</span>
+            <span>© 2025 ALGOBULLET</span>
+        </div>
+    </div>
+</footer>
 </body>
 </html>

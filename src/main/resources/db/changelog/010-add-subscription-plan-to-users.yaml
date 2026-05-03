@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-add-subscription-plan-to-users
+      author: codex
+      changes:
+        - addColumn:
+            tableName: app_users
+            schemaName: algo
+            columns:
+              - column:
+                  name: subscription_plan
+                  type: VARCHAR(32)
+                  defaultValue: FREE
+                  constraints:
+                    nullable: false

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::body})}">
+<body>
+<section class="checkout-shell">
+    <div class="checkout-main panel">
+        <div class="checkout-head">
+            <div>
+                <div class="pricing-card__eyebrow">Оформление доступа</div>
+                <h1 class="checkout-title">Оплата тарифа</h1>
+            </div>
+            <span class="checkout-status">Ожидает оплаты</span>
+        </div>
+
+        <p class="page-lead">Проверьте параметры заказа и подтвердите подключение выбранного тарифа. После активации оплата будет доступна в личном кабинете.</p>
+
+        <div class="checkout-order">
+            <div class="checkout-order__row">
+                <span>Тариф</span>
+                <strong th:text="${plan.displayName}">B2C Pro</strong>
+            </div>
+            <div class="checkout-order__row">
+                <span>Стоимость</span>
+                <strong th:text="${plan.priceLabel}">2 990 ₽</strong>
+            </div>
+            <div class="checkout-order__row">
+                <span>Период</span>
+                <strong th:text="${plan.name() == 'FREE'} ? 'Без ограничений по сроку' : '1 месяц доступа'">1 месяц доступа</strong>
+            </div>
+            <div class="checkout-order__row">
+                <span>Способ оплаты</span>
+                <strong>Банковская карта</strong>
+            </div>
+        </div>
+
+        <div class="checkout-note">
+            <strong>Что входит в тариф</strong>
+            <p th:text="${plan.shortDescription}">100+ пар, памп-скринер, API</p>
+        </div>
+
+        <div class="checkout-actions">
+            <button class="btn btn-primary btn-checkout" type="button">Оплатить</button>
+            <a class="btn btn-secondary" th:href="@{/pricing}">Изменить тариф</a>
+            <a class="btn btn-secondary" th:href="@{/profile}">Вернуться в профиль</a>
+        </div>
+    </div>
+
+    <aside class="checkout-side panel">
+        <h2>Детали подключения</h2>
+        <ul class="checkout-list">
+            <li>Доступ активируется после подтверждения оплаты.</li>
+            <li>Все параметры заказа будут доступны в личном кабинете.</li>
+            <li>Для корпоративного подключения можно использовать страницу контактов.</li>
+        </ul>
+
+        <div class="empty-state checkout-side__notice">
+            Онлайн-оплата скоро появится. Пока вы можете выбрать тариф и сохранить параметры подключения.
+        </div>
+    </aside>
+</section>
+</body>
+</html>

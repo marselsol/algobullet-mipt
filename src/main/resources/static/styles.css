@@ -6,7 +6,6 @@ body {
     line-height: 1.6;
 }
 
-/* === Header === */
 header {
     background-color: #fff;
     border-bottom: 1px solid #e5e8ee;
@@ -30,7 +29,6 @@ header {
     color: #007aff;
 }
 
-/* === Navigation === */
 nav {
     display: flex;
     align-items: center;
@@ -54,7 +52,6 @@ nav button:hover {
     color: #007aff;
 }
 
-/* === Logout Button === */
 .logout-form--nav {
     display: inline-block;
 }
@@ -63,18 +60,16 @@ nav button:hover {
     color: #1f1f1f;
 }
 
-/* === Main Container === */
 .container {
     max-width: 1200px;
     margin: 40px auto;
     padding: 0 20px;
 }
 
-/* === Panels (white cards) === */
 .panel {
     background-color: #fff;
     border-radius: 16px;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
     padding: 32px;
     margin-bottom: 32px;
 }
@@ -93,7 +88,6 @@ nav button:hover {
     margin-bottom: 12px;
 }
 
-/* === Table === */
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -113,7 +107,6 @@ nav button:hover {
     border-bottom: 1px solid #f3f4f6;
 }
 
-/* === Badges === */
 .badge {
     display: inline-block;
     padding: 4px 10px;
@@ -124,7 +117,6 @@ nav button:hover {
     font-weight: 600;
 }
 
-/* === Buttons === */
 .btn {
     background-color: #007aff;
     color: white;
@@ -151,7 +143,6 @@ nav button:hover {
     background-color: #dce8ff;
 }
 
-/* === Lists and Rows === */
 .list {
     list-style: none;
     margin: 0;
@@ -170,58 +161,17 @@ nav button:hover {
     border-top: none;
 }
 
-/* === Layout Grid === */
 .grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 24px;
 }
 
-/* === Footer === */
-.footer {
-    text-align: center;
-    color: #888;
-    font-size: 0.9rem;
-    padding: 24px 0;
-}
-
-/* === Responsiveness === */
-@media (max-width: 900px) {
-    .grid {
-        grid-template-columns: 1fr;
-    }
-    nav {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .container {
-        margin: 20px auto;
-    }
-}
-
-@media (max-width: 600px) {
-    .auth {
-        padding: 56px 12px 24px;
-    }
-
-    .auth-card {
-        padding: 36px 28px;
-        gap: 20px;
-        border-radius: 18px;
-        box-shadow: 0 14px 32px rgba(30, 40, 80, 0.12);
-    }
-
-    .auth-actions {
-        gap: 8px;
-    }
-}
-
-/* === Login Page Centering === */
 .center {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 120px); /* чтобы было по центру по высоте */
+    min-height: calc(100vh - 120px);
 }
 
 .auth {
@@ -274,7 +224,6 @@ nav button:hover {
     color: #1f1f1f;
 }
 
-/* === Form Inputs === */
 input[type="text"],
 input[type="password"],
 input[type="email"],
@@ -295,7 +244,7 @@ input[type="email"]:focus,
 input[type="tel"]:focus {
     border-color: #007aff;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
 }
 
 .auth-actions {
@@ -305,16 +254,16 @@ input[type="tel"]:focus {
     flex-wrap: wrap;
 }
 
-/* === Helper Blocks === */
 .hint {
     font-size: 0.9rem;
     color: #666;
 }
 
-/* === Form Buttons === */
 .row {
     display: flex;
     align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .btn-primary {
@@ -333,7 +282,6 @@ input[type="tel"]:focus {
     background-color: #005fcc;
 }
 
-/* Pump screener settings */
 .pump-settings__form {
     display: flex;
     flex-direction: column;
@@ -365,15 +313,8 @@ input[type="tel"]:focus {
     margin: 16px 0;
 }
 
-/* Limit to max 2 columns when desired (e.g. EMA page) */
 .watchlist-grid--2cols {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-@media (max-width: 700px) {
-    .watchlist-grid--2cols {
-        grid-template-columns: 1fr;
-    }
 }
 
 .watch-card {
@@ -418,7 +359,6 @@ input[type="tel"]:focus {
     color: #525866;
 }
 
-/* === Portfolio analysis === */
 .metric-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -609,4 +549,376 @@ input[type="tel"]:focus {
 .table--latency th:nth-child(8),
 .table--latency td:nth-child(8) {
     width: 110px;
+}
+
+.page-hero {
+    margin-bottom: 24px;
+}
+
+.page-lead {
+    margin: 0;
+    color: #5b6472;
+    max-width: 760px;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.pricing-card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    border: 1px solid #e5e8ee;
+    box-shadow: 0 12px 28px rgba(20, 30, 60, 0.06);
+}
+
+.pricing-card--featured {
+    border-color: #007aff;
+    box-shadow: 0 18px 34px rgba(0, 122, 255, 0.12);
+}
+
+.pricing-card__eyebrow {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #007aff;
+}
+
+.pricing-card__title {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.pricing-card__price {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.pricing-card__price-note {
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+.pricing-card__description {
+    margin: 0;
+    color: #4b5563;
+}
+
+.pricing-card__features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+    color: #1f2937;
+}
+
+.pricing-card__features li {
+    padding-left: 18px;
+    position: relative;
+}
+
+.pricing-card__features li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background-color: #007aff;
+}
+
+.pricing-card__actions {
+    margin-top: auto;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.detail-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.detail-list strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.legal-copy {
+    display: grid;
+    gap: 18px;
+}
+
+.legal-copy h2 {
+    margin-bottom: 8px;
+}
+
+.legal-copy p,
+.legal-copy li {
+    color: #374151;
+}
+
+.legal-copy ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.footer {
+    padding: 32px 20px 36px;
+    border-top: 1px solid #e5e8ee;
+    background-color: #fbfcff;
+    text-align: left;
+}
+
+.footer__inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px 28px;
+}
+
+.footer__brand,
+.footer__links,
+.footer__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer__links a,
+.footer__meta span,
+.footer__brand span {
+    color: #667085;
+    font-size: 0.92rem;
+    text-decoration: none;
+}
+
+.footer__links a:hover {
+    color: #007aff;
+}
+
+.plan-summary {
+    border: 1px solid #dbe4f0;
+    background-color: #fbfcff;
+}
+
+.plan-summary__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.plan-summary__price {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin: 6px 0;
+}
+
+.subscription-form {
+    display: grid;
+    gap: 16px;
+}
+
+.subscription-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.plan-option {
+    display: block;
+    cursor: pointer;
+}
+
+.plan-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.plan-option__content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 18px;
+    border: 1px solid #d9dfeb;
+    border-radius: 14px;
+    background-color: #fbfcff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.plan-option__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.plan-option input:checked + .plan-option__content {
+    border-color: #007aff;
+    box-shadow: 0 10px 24px rgba(0, 122, 255, 0.12);
+    background-color: #f4f8ff;
+}
+
+.plan-checkout-card {
+    max-width: 420px;
+}
+
+.checkout-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.checkout-main,
+.checkout-side {
+    margin-bottom: 0;
+}
+
+.checkout-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.checkout-title {
+    margin: 6px 0 0;
+    font-size: 2rem;
+}
+
+.checkout-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background-color: #fff4d6;
+    color: #9a6700;
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.checkout-order {
+    margin: 28px 0 20px;
+    border: 1px solid #e5e8ee;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.checkout-order__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 18px;
+    background-color: #fff;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.checkout-order__row:last-child {
+    border-bottom: none;
+}
+
+.checkout-order__row span {
+    color: #667085;
+}
+
+.checkout-note {
+    padding: 18px 20px;
+    border-radius: 14px;
+    background-color: #f8fbff;
+    border: 1px solid #dbeafe;
+}
+
+.checkout-note strong {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.checkout-note p {
+    margin: 0;
+    color: #445164;
+}
+
+.checkout-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+
+.btn-checkout {
+    min-width: 170px;
+}
+
+.checkout-list {
+    margin: 0 0 18px;
+    padding-left: 18px;
+    color: #445164;
+}
+
+.checkout-list li + li {
+    margin-top: 10px;
+}
+
+.checkout-side__notice {
+    margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-shell {
+        grid-template-columns: 1fr;
+    }
+
+    nav {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .container {
+        margin: 20px auto;
+    }
+}
+
+@media (max-width: 700px) {
+    .watchlist-grid--2cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .auth {
+        padding: 56px 12px 24px;
+    }
+
+    .auth-card {
+        padding: 36px 28px;
+        gap: 20px;
+        border-radius: 18px;
+        box-shadow: 0 14px 32px rgba(30, 40, 80, 0.12);
+    }
+
+    .auth-actions {
+        gap: 8px;
+    }
 }

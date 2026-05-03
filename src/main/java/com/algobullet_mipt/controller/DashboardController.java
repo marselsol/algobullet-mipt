@@ -1,5 +1,6 @@
 package com.algobullet_mipt.controller;
 
+import com.algobullet_mipt.entity.SubscriptionPlan;
 import com.algobullet_mipt.entity.UserAccount;
 import com.algobullet_mipt.service.SettingsService;
 import com.algobullet_mipt.service.SignalFeedService;
@@ -34,6 +35,11 @@ public class DashboardController {
         model.addAttribute("pump", settings.pump());
         model.addAttribute("ema", settings.ema());
         UserAccount user = userAccountService.getCurrentUser().orElse(null);
+        SubscriptionPlan currentPlan = user != null && user.getSubscriptionPlan() != null
+                ? user.getSubscriptionPlan()
+                : SubscriptionPlan.FREE;
+        model.addAttribute("currentPlan", currentPlan);
+        model.addAttribute("subscriptionPlans", SubscriptionPlan.values());
         model.addAttribute("bybitApiKey", user != null ? user.getBybitApiKey() : "");
         model.addAttribute("hasBybitApiSecret", user != null && user.getBybitApiSecret() != null && !user.getBybitApiSecret().isBlank());
         return "profile";
@@ -45,5 +51,17 @@ public class DashboardController {
                                          @RequestParam(value = "clearCredentials", defaultValue = "false") boolean clearCredentials) {
         boolean updated = userAccountService.updateCurrentUserBybitCredentials(apiKey, apiSecret, clearCredentials);
         return updated ? "redirect:/profile?bybitSaved" : "redirect:/profile?bybitError";
+    }
+
+    @PostMapping("/profile/subscription")
+    public String updateSubscriptionPlan(@RequestParam("plan") SubscriptionPlan plan) {
+        return "redirect:/checkout?plan=" + plan.name();
+    }
+
+    @GetMapping("/checkout")
+    public String checkout(@RequestParam("plan") SubscriptionPlan plan, Model model) {
+        model.addAttribute("title", "Оплата тарифа | ALGOBULLET");
+        model.addAttribute("plan", plan);
+        return "checkout";
     }
 }

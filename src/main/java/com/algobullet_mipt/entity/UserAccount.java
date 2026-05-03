@@ -68,6 +68,10 @@ public class UserAccount implements UserDetails {
     @ToString.Exclude
     private String bybitApiSecret;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "subscription_plan", nullable = false, length = 32)
+    private SubscriptionPlan subscriptionPlan = SubscriptionPlan.FREE;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", schema = "algo", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
@@ -79,6 +83,9 @@ public class UserAccount implements UserDetails {
         createdAt = Instant.now();
         if (roles.isEmpty()) {
             roles.add(UserRole.USER);
+        }
+        if (subscriptionPlan == null) {
+            subscriptionPlan = SubscriptionPlan.FREE;
         }
     }
 
