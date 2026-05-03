@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 002-create-signal-history
-      author: codex
+      author: marsel
       preConditions:
         - onFail: CONTINUE
         - onError: CONTINUE

@@ -1,7 +1,14 @@
 databaseChangeLog:
   - changeSet:
       id: 008-create-bybit-latency-measurement
-      author: codex
+      author: marsel
+      preConditions:
+        onFail: MARK_RAN
+        onError: HALT
+        not:
+          tableExists:
+            schemaName: algo
+            tableName: bybit_latency_measurement
       changes:
         - createTable:
             schemaName: algo

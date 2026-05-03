@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 009-create-app-feature-flags
-      author: codex
+      author: marsel
       preConditions:
         onFail: MARK_RAN
         onError: HALT

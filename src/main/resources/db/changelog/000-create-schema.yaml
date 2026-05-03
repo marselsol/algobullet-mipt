@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 000-create-schema
-      author: codex
+      author: marsel
       preConditions:
         - onFail: CONTINUE
         - onError: CONTINUE
