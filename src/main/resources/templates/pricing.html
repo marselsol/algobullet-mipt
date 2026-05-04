@@ -13,7 +13,9 @@
             <div class="pricing-card__eyebrow">Бесплатно</div>
             <h2 class="pricing-card__title">Free</h2>
         </div>
-        <div class="pricing-card__price">0 ₽</div>
+        <div class="price-stack">
+            <div class="pricing-card__price">0 ₽</div>
+        </div>
         <p class="pricing-card__description">Стартовый доступ к платформе и основным разделам сервиса.</p>
         <ul class="pricing-card__features">
             <li>Доступ к личному кабинету</li>
@@ -22,7 +24,7 @@
         </ul>
         <div class="pricing-card__actions">
             <a class="btn btn-secondary"
-               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='FREE')} : @{/register}">Подключить тариф</a>
+               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='FREE')} : @{/register}">Выбрать тариф</a>
         </div>
     </article>
 
@@ -31,7 +33,10 @@
             <div class="pricing-card__eyebrow">B2C</div>
             <h2 class="pricing-card__title">Basic</h2>
         </div>
-        <div class="pricing-card__price">1 490 ₽</div>
+        <div class="price-stack">
+            <div class="price-old">1 490 ₽</div>
+            <div class="pricing-card__price price-sale">199 ₽</div>
+        </div>
         <p class="pricing-card__description">20+ пар, сигналы и базовая аналитика.</p>
         <ul class="pricing-card__features">
             <li>Доступ к основным торговым парам</li>
@@ -40,7 +45,7 @@
         </ul>
         <div class="pricing-card__actions">
             <a class="btn btn-primary"
-               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2C_BASIC')} : @{/register}">Подключить тариф</a>
+               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2C_BASIC')} : @{/register}">Выбрать тариф</a>
         </div>
     </article>
 
@@ -49,7 +54,10 @@
             <div class="pricing-card__eyebrow">B2C</div>
             <h2 class="pricing-card__title">Pro</h2>
         </div>
-        <div class="pricing-card__price">2 990 ₽</div>
+        <div class="price-stack">
+            <div class="price-old">2 990 ₽</div>
+            <div class="pricing-card__price price-sale">499 ₽</div>
+        </div>
         <p class="pricing-card__description">100+ пар, памп-скринер и доступ к API.</p>
         <ul class="pricing-card__features">
             <li>Расширенный набор торговых пар</li>
@@ -58,7 +66,7 @@
         </ul>
         <div class="pricing-card__actions">
             <a class="btn btn-primary"
-               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2C_PRO')} : @{/register}">Подключить тариф</a>
+               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2C_PRO')} : @{/register}">Выбрать тариф</a>
         </div>
     </article>
 
@@ -67,7 +75,9 @@
             <div class="pricing-card__eyebrow">B2B</div>
             <h2 class="pricing-card__title">API</h2>
         </div>
-        <div class="pricing-card__price">от 50k <span class="pricing-card__price-note">в месяц</span></div>
+        <div class="price-stack">
+            <div class="pricing-card__price">от 50k <span class="pricing-card__price-note">в месяц</span></div>
+        </div>
         <p class="pricing-card__description">Индивидуальные условия для компаний с повышенной нагрузкой и интеграционными задачами.</p>
         <ul class="pricing-card__features">
             <li>Корпоративный формат подключения</li>
@@ -76,7 +86,7 @@
         </ul>
         <div class="pricing-card__actions">
             <a class="btn btn-secondary"
-               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2B_API')} : @{/register}">Подключить тариф</a>
+               th:href="${#authorization.expression('isAuthenticated()')} ? @{/checkout(plan='B2B_API')} : @{/register}">Выбрать тариф</a>
         </div>
     </article>
 </section>

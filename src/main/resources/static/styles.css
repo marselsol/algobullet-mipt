@@ -638,6 +638,34 @@ input[type="tel"]:focus {
     margin-top: auto;
 }
 
+.price-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.price-stack--compact {
+    gap: 2px;
+}
+
+.price-stack--inline {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.price-old {
+    color: #98a2b3;
+    font-size: 1rem;
+    text-decoration: line-through;
+}
+
+.price-sale {
+    color: #d92d20;
+}
+
 .details-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -838,6 +866,13 @@ input[type="tel"]:focus {
     color: #667085;
 }
 
+.checkout-order__row strong {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    text-align: right;
+}
+
 .checkout-note {
     padding: 18px 20px;
     border-radius: 14px;
@@ -879,6 +914,34 @@ input[type="tel"]:focus {
 
 .checkout-side__notice {
     margin-bottom: 0;
+}
+
+.checkout-widget-state {
+    margin-top: 20px;
+}
+
+.checkout-feedback {
+    margin-top: 16px;
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background-color: #f4f8ff;
+    border: 1px solid #dbeafe;
+    color: #334155;
+}
+
+.checkout-feedback--error {
+    background-color: #fff1f2;
+    border-color: #fecdd3;
+    color: #9f1239;
+}
+
+.yookassa-widget {
+    min-height: 240px;
+    border: 1px solid #e5e8ee;
+    border-radius: 16px;
+    background-color: #fff;
+    overflow: hidden;
 }
 
 @media (max-width: 900px) {

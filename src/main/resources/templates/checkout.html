@@ -2,61 +2,257 @@
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/layout :: layout(~{::body})}">
 <body>
-<section class="checkout-shell">
-    <div class="checkout-main panel">
-        <div class="checkout-head">
-            <div>
-                <div class="pricing-card__eyebrow">Оформление доступа</div>
-                <h1 class="checkout-title">Оплата тарифа</h1>
+<th:block th:if="${!plan.contactOnly}">
+    <section class="checkout-shell">
+        <div class="checkout-main panel">
+            <div class="checkout-head">
+                <div>
+                    <div class="pricing-card__eyebrow">Оформление доступа</div>
+                    <h1 class="checkout-title">Оплата тарифа</h1>
+                </div>
+                <span class="checkout-status">Ожидает оплаты</span>
             </div>
-            <span class="checkout-status">Ожидает оплаты</span>
+
+            <p class="page-lead">Проверьте параметры заказа и подтвердите оплату. После успешного платежа доступ к тарифу активируется автоматически.</p>
+
+            <div class="checkout-order">
+                <div class="checkout-order__row">
+                    <span>Тариф</span>
+                    <strong th:text="${plan.displayName}">B2C Pro</strong>
+                </div>
+                <div class="checkout-order__row">
+                    <span>Стоимость</span>
+                    <strong>
+                        <span class="price-old" th:if="${plan.hasDiscount()}" th:text="${plan.oldPriceLabel}">2 990 ₽</span>
+                        <span th:text="${plan.priceLabel}">499 ₽</span>
+                    </strong>
+                </div>
+                <div class="checkout-order__row">
+                    <span>Период</span>
+                    <strong th:text="${plan.name() == 'FREE'} ? 'Без ограничений по сроку' : '1 месяц доступа'">1 месяц доступа</strong>
+                </div>
+                <div class="checkout-order__row">
+                    <span>Способ оплаты</span>
+                    <strong th:text="${plan.payable} ? 'СБП через ЮKassa' : 'Без оплаты'">СБП через ЮKassa</strong>
+                </div>
+            </div>
+
+            <div class="checkout-note">
+                <strong>Что входит в тариф</strong>
+                <p th:text="${plan.shortDescription}">100+ пар, памп-скринер, API</p>
+            </div>
+
+            <div class="checkout-note" th:if="${plan.payable}">
+                <strong>Как проходит оплата</strong>
+                <p>После нажатия кнопки откроется безопасная страница оплаты ЮKassa, где можно подтвердить платеж через СБП.</p>
+            </div>
+
+            <div class="checkout-widget-state" th:if="${plan.payable}">
+                <div class="empty-state" th:if="${!yooKassaConfigured}">
+                    Онлайн-оплата временно недоступна. Попробуйте позже или свяжитесь с нами через страницу контактов.
+                </div>
+                <div class="checkout-feedback" id="checkout-feedback" th:if="${yooKassaConfigured}">Платеж еще не создан.</div>
+            </div>
+
+            <div class="checkout-actions">
+                <form th:if="${plan.name() == 'FREE'}" th:action="@{/checkout/free}" method="post">
+                    <button class="btn btn-primary btn-checkout" type="submit">Активировать Free</button>
+                </form>
+                <button th:if="${plan.payable}" class="btn btn-primary btn-checkout" id="pay-button" type="button"
+                        th:disabled="${!yooKassaConfigured}">Оплатить через СБП</button>
+                <button th:if="${plan.payable}" class="btn btn-secondary" id="check-payment-button" type="button" disabled>Проверить оплату</button>
+                <a class="btn btn-secondary" th:href="@{/pricing}">Изменить тариф</a>
+                <a class="btn btn-secondary" th:href="@{/profile}">Вернуться в профиль</a>
+            </div>
         </div>
 
-        <p class="page-lead">Проверьте параметры заказа и подтвердите подключение выбранного тарифа. После активации оплата будет доступна в личном кабинете.</p>
+        <aside class="checkout-side panel">
+            <h2>Детали подключения</h2>
+            <ul class="checkout-list">
+                <li>После подтверждения оплаты доступ к тарифу активируется автоматически.</li>
+                <li>Информация о тарифе обновится в личном кабинете.</li>
+                <li>Если статус не обновился сразу, можно повторно проверить оплату на этой странице.</li>
+            </ul>
+        </aside>
+    </section>
+</th:block>
 
-        <div class="checkout-order">
+<th:block th:if="${plan.contactOnly}">
+    <section class="panel" style="max-width:760px">
+        <div class="pricing-card__eyebrow">Корпоративное подключение</div>
+        <h1 style="margin-top:6px">B2B API</h1>
+        <p class="page-lead">Для корпоративного доступа условия подключения, стоимость и формат интеграции согласовываются индивидуально.</p>
+
+        <div class="checkout-note" style="margin-top:28px">
+            <strong>Как подключить корпоративный тариф</strong>
+            <p>Напишите нам на почту <strong>marselgajsin@yandex.ru</strong>, чтобы согласовать условия подключения, объем доступа, формат интеграции и стоимость.</p>
+        </div>
+
+        <div class="checkout-order" style="margin-top:24px">
             <div class="checkout-order__row">
                 <span>Тариф</span>
-                <strong th:text="${plan.displayName}">B2C Pro</strong>
+                <strong th:text="${plan.displayName}">B2B API</strong>
             </div>
             <div class="checkout-order__row">
                 <span>Стоимость</span>
-                <strong th:text="${plan.priceLabel}">2 990 ₽</strong>
+                <strong th:text="${plan.priceLabel}">от 50k</strong>
             </div>
             <div class="checkout-order__row">
-                <span>Период</span>
-                <strong th:text="${plan.name() == 'FREE'} ? 'Без ограничений по сроку' : '1 месяц доступа'">1 месяц доступа</strong>
+                <span>Формат подключения</span>
+                <strong>Индивидуальные условия</strong>
             </div>
-            <div class="checkout-order__row">
-                <span>Способ оплаты</span>
-                <strong>Банковская карта</strong>
-            </div>
-        </div>
-
-        <div class="checkout-note">
-            <strong>Что входит в тариф</strong>
-            <p th:text="${plan.shortDescription}">100+ пар, памп-скринер, API</p>
         </div>
 
         <div class="checkout-actions">
-            <button class="btn btn-primary btn-checkout" type="button">Оплатить</button>
-            <a class="btn btn-secondary" th:href="@{/pricing}">Изменить тариф</a>
-            <a class="btn btn-secondary" th:href="@{/profile}">Вернуться в профиль</a>
+            <a class="btn btn-primary" href="mailto:marselgajsin@yandex.ru?subject=ALGOBULLET%20B2B%20API">Написать на почту</a>
+            <a class="btn btn-secondary" th:href="@{/contacts}">Контакты и реквизиты</a>
+            <a class="btn btn-secondary" th:href="@{/pricing}">Назад к тарифам</a>
         </div>
-    </div>
+    </section>
+</th:block>
 
-    <aside class="checkout-side panel">
-        <h2>Детали подключения</h2>
-        <ul class="checkout-list">
-            <li>Доступ активируется после подтверждения оплаты.</li>
-            <li>Все параметры заказа будут доступны в личном кабинете.</li>
-            <li>Для корпоративного подключения можно использовать страницу контактов.</li>
-        </ul>
+<th:block th:if="${plan.payable and yooKassaConfigured}">
+    <script th:inline="javascript">
+        const currentPlan = /*[[${plan.name()}]]*/ "B2C_PRO";
+        const payButton = document.getElementById("pay-button");
+        const checkPaymentButton = document.getElementById("check-payment-button");
+        const feedbackNode = document.getElementById("checkout-feedback");
+        const storageKey = `yookassa:payment:${currentPlan}`;
+        let paymentId = new URL(window.location.href).searchParams.get("paymentId") || window.localStorage.getItem(storageKey);
+        let pollHandle = null;
 
-        <div class="empty-state checkout-side__notice">
-            Онлайн-оплата скоро появится. Пока вы можете выбрать тариф и сохранить параметры подключения.
-        </div>
-    </aside>
-</section>
+        function stringifyError(error) {
+            if (!error) {
+                return "empty error";
+            }
+            if (typeof error === "string") {
+                return error;
+            }
+            if (error instanceof Error) {
+                return `${error.name}: ${error.message}`;
+            }
+            try {
+                return JSON.stringify(error);
+            } catch (jsonError) {
+                return String(error);
+            }
+        }
+
+        async function sendClientLog(level, message, details) {
+            try {
+                await fetch("/api/billing/yookassa/client-log", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ level, message, details })
+                });
+            } catch (loggingError) {
+                console.error("Failed to send YooKassa client log", loggingError);
+            }
+        }
+
+        function setFeedback(message, isError = false) {
+            if (!feedbackNode) {
+                return;
+            }
+            feedbackNode.textContent = message;
+            feedbackNode.classList.toggle("checkout-feedback--error", isError);
+        }
+
+        function updatePaymentId(nextPaymentId) {
+            paymentId = nextPaymentId;
+            checkPaymentButton.disabled = !paymentId;
+            if (paymentId) {
+                window.localStorage.setItem(storageKey, paymentId);
+            } else {
+                window.localStorage.removeItem(storageKey);
+            }
+            const url = new URL(window.location.href);
+            if (paymentId) {
+                url.searchParams.set("paymentId", paymentId);
+            } else {
+                url.searchParams.delete("paymentId");
+            }
+            url.searchParams.set("plan", currentPlan);
+            window.history.replaceState({}, "", url);
+        }
+
+        async function fetchJson(url, options) {
+            const response = await fetch(url, options);
+            const body = await response.json();
+            if (!response.ok) {
+                await sendClientLog("error", "fetchJson failed", `url=${url}; status=${response.status}; body=${JSON.stringify(body)}`);
+                throw new Error(body.message || "Ошибка запроса");
+            }
+            return body;
+        }
+
+        async function checkPaymentStatus() {
+            if (!paymentId) {
+                return;
+            }
+
+            try {
+                const status = await fetchJson(`/api/billing/yookassa/payment/${paymentId}`);
+                setFeedback(status.message, status.status === "canceled");
+                if (status.paid) {
+                    window.localStorage.removeItem(storageKey);
+                    clearInterval(pollHandle);
+                    pollHandle = null;
+                    window.location.href = "/profile?paymentSuccess";
+                }
+            } catch (error) {
+                await sendClientLog("error", "checkPaymentStatus exception", stringifyError(error));
+                setFeedback(error.message, true);
+            }
+        }
+
+        async function createPayment() {
+            payButton.disabled = true;
+            setFeedback("Создаю платеж...");
+            try {
+                await sendClientLog("info", "createPayment click", `plan=${currentPlan}; href=${window.location.href}`);
+                const session = await fetchJson(`/api/billing/yookassa/payment?plan=${encodeURIComponent(currentPlan)}`, {
+                    method: "POST"
+                });
+                await sendClientLog("info", "createPayment session received", JSON.stringify(session));
+
+                updatePaymentId(session.paymentId);
+                setFeedback("Платеж создан. Перенаправляю на страницу оплаты...");
+
+                if (!pollHandle) {
+                    pollHandle = window.setInterval(checkPaymentStatus, 5000);
+                    await sendClientLog("info", "polling started", `paymentId=${session.paymentId}`);
+                }
+
+                await sendClientLog("info", "redirect to yookassa", `paymentId=${session.paymentId}; confirmationUrl=${session.confirmationUrl}`);
+                window.location.href = session.confirmationUrl;
+            } catch (error) {
+                await sendClientLog("error", "createPayment exception", stringifyError(error));
+                setFeedback(error.message, true);
+            } finally {
+                payButton.disabled = false;
+            }
+        }
+
+        payButton.addEventListener("click", createPayment);
+        checkPaymentButton.addEventListener("click", checkPaymentStatus);
+
+        if (paymentId) {
+            checkPaymentButton.disabled = false;
+            setFeedback("Проверяю статус оплаты...");
+            checkPaymentStatus();
+        }
+
+        window.addEventListener("error", function (event) {
+            void sendClientLog("error", "window error", `message=${event.message}; source=${event.filename}; line=${event.lineno}; col=${event.colno}`);
+        });
+
+        window.addEventListener("unhandledrejection", function (event) {
+            void sendClientLog("error", "window unhandledrejection", stringifyError(event.reason));
+        });
+    </script>
+</th:block>
 </body>
 </html>

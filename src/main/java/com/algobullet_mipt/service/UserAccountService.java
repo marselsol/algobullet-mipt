@@ -89,6 +89,17 @@ public class UserAccountService {
         return true;
     }
 
+    @Transactional
+    public boolean updateCurrentUserSubscriptionPlan(SubscriptionPlan plan) {
+        Optional<UserAccount> currentUser = getCurrentUser();
+        if (currentUser.isEmpty()) {
+            return false;
+        }
+
+        currentUser.get().setSubscriptionPlan(plan);
+        return true;
+    }
+
     private String normalizeNullable(String value) {
         if (value == null) {
             return null;

@@ -15,7 +15,10 @@
     <div class="panel plan-summary">
         <div class="pricing-card__eyebrow">Активный план</div>
         <div class="plan-summary__title" th:text="${currentPlan.displayName}">Free</div>
-        <div class="plan-summary__price" th:text="${currentPlan.priceLabel}">0 ₽</div>
+        <div class="price-stack price-stack--compact">
+            <div class="price-old" th:if="${currentPlan.hasDiscount()}" th:text="${currentPlan.oldPriceLabel}">1 490 ₽</div>
+            <div class="plan-summary__price" th:text="${currentPlan.priceLabel}">0 ₽</div>
+        </div>
         <div class="hint" th:text="${currentPlan.shortDescription}">Базовый доступ к сервису</div>
     </div>
 
@@ -28,14 +31,17 @@
                 <span class="plan-option__content">
                     <span class="plan-option__head">
                         <strong th:text="${plan.displayName}">Free</strong>
-                        <span th:text="${plan.priceLabel}">0 ₽</span>
+                        <span class="price-stack price-stack--inline">
+                            <span class="price-old" th:if="${plan.hasDiscount()}" th:text="${plan.oldPriceLabel}">2 990 ₽</span>
+                            <span th:text="${plan.priceLabel}">0 ₽</span>
+                        </span>
                     </span>
                     <span class="hint" th:text="${plan.shortDescription}">Базовый доступ к сервису</span>
                 </span>
             </label>
         </div>
         <div class="row" style="margin-top:16px">
-            <button class="btn btn-primary" type="submit">Перейти к оплате</button>
+            <button class="btn btn-primary" type="submit">Перейти к оформлению</button>
         </div>
     </form>
 

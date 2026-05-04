@@ -2,6 +2,7 @@ package com.algobullet_mipt.controller;
 
 import com.algobullet_mipt.entity.SubscriptionPlan;
 import com.algobullet_mipt.entity.UserAccount;
+import com.algobullet_mipt.payment.yookassa.YooKassaProperties;
 import com.algobullet_mipt.service.SettingsService;
 import com.algobullet_mipt.service.SignalFeedService;
 import com.algobullet_mipt.service.UserAccountService;
@@ -19,6 +20,7 @@ public class DashboardController {
     private final SettingsService settings;
     private final SignalFeedService feed;
     private final UserAccountService userAccountService;
+    private final YooKassaProperties yooKassaProperties;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -58,10 +60,18 @@ public class DashboardController {
         return "redirect:/checkout?plan=" + plan.name();
     }
 
+    @PostMapping("/checkout/free")
+    public String activateFreePlan() {
+        boolean updated = userAccountService.updateCurrentUserSubscriptionPlan(SubscriptionPlan.FREE);
+        return updated ? "redirect:/profile?planUpdated" : "redirect:/profile?planUpdateError";
+    }
+
     @GetMapping("/checkout")
     public String checkout(@RequestParam("plan") SubscriptionPlan plan, Model model) {
         model.addAttribute("title", "Оплата тарифа | ALGOBULLET");
         model.addAttribute("plan", plan);
+        model.addAttribute("yooKassaConfigured", yooKassaProperties.isConfigured());
+        model.addAttribute("yooKassaReturnUrl", yooKassaProperties.getReturnUrl());
         return "checkout";
     }
 }
