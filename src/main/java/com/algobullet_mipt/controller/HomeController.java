@@ -19,6 +19,12 @@ public class HomeController {
         return "pricing";
     }
 
+    @GetMapping("/feedback-access")
+    public String feedbackAccess(Model model) {
+        model.addAttribute("title", "Бесплатный месяц за отзыв | ALGOBULLET");
+        return "feedback-access";
+    }
+
     @GetMapping("/contacts")
     public String contacts(Model model) {
         model.addAttribute("title", "Контакты и реквизиты | ALGOBULLET");
